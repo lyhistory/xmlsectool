@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>edu.internet2.middleware</groupId>
+	<artifactId>xmltool</artifactId>
+	<version>SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>XMLTool</name>
+	<description>
+        A command line tool for checking an XML file for well-formedness and validity as well as 
+        signing and checking signatures.
+    </description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <slf4j.groupId>org.slf4j</slf4j.groupId>
+        <slf4j.version>1.5.8</slf4j.version>
+        <xerces.groupId>org.apache.xerces</xerces.groupId>
+        <xerces.version>2.9.1</xerces.version>
+    </properties>
+
+	<repositories>
+		<repository>
+			<id>shibboleth.internet2.edu</id>
+			<name>Internet2</name>
+			<layout>default</layout>
+			<url>http://shibboleth.internet2.edu/downloads/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>release-repo</id>
+			<url>${dist.release.url}</url>
+		</repository>
+	</distributionManagement>
+
+	<dependencies>
+		<!-- Compile dependencies -->
+		<dependency>
+			<groupId>org.opensaml</groupId>
+			<artifactId>opensaml</artifactId>
+			<version>2.3.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>          
+                    <artifactId>commons-logging</artifactId>            
+                </exclusion>            
+            </exclusions>
+		</dependency>
+        <dependency>
+            <groupId>edu.internet2.middleware</groupId>
+            <artifactId>shibboleth-jce</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+		<dependency>
+			<groupId>${slf4j.groupId}</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${slf4j.groupId}</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>0.9.17</version>
+		</dependency>
+        <dependency>
+            <groupId>jargs</groupId>
+            <artifactId>jargs</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+    	<!-- Runtime dependencies -->
+        <dependency>
+            <groupId>${xerces.groupId}</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>${xerces.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${xerces.groupId}</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>${xerces.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${xerces.groupId}</groupId>
+            <artifactId>resolver</artifactId>
+            <version>${xerces.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${xerces.groupId}</groupId>
+            <artifactId>serializer</artifactId>
+            <version>${xerces.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.apache.xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<version>2.7.1</version>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+					<debug>true</debug>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/bin.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<links>
+						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+					</links>
+					<quiet>true</quiet>
+					<author>false</author>
+					<version>true</version>
+					<doctitle>${project.name} ${project.version} Java API.</doctitle>
+					<windowtitle>${project.name} ${project.version} Java API.</windowtitle>
+					<overview>src/main/java/overview.html</overview>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<!-- Project Metadata -->
+	<url>https://shibboleth.internet2.edu/</url>
+
+	<inceptionYear>2009</inceptionYear>
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Internet2</name>
+		<url>http://www.internet2.edu/</url>
+	</organization>
+
+	<issueManagement>
+		<system>JIRA</system>
+		<url>http://bugs.internet2.edu/</url>
+	</issueManagement>
+
+	<mailingLists>
+		<mailingList>
+			<name>Shibboleth Announce</name>
+			<subscribe>http://shibboleth.internet2.edu/support.html#lists
+			</subscribe>
+			<unsubscribe>http://shibboleth.internet2.edu/support.html#lists
+			</unsubscribe>
+			<post>shibboleth-announce@internet2.edu</post>
+			<archive>https://mail.internet2.edu/wws/arc/shibboleth-announce
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name>Shibboleth Users</name>
+			<subscribe>http://shibboleth.internet2.edu/support.html#lists
+			</subscribe>
+			<unsubscribe>http://shibboleth.internet2.edu/support.html#lists
+			</unsubscribe>
+			<post>shibboleth-users@internet2.edu</post>
+			<archive>https://mail.internet2.edu/wws/arc/shibboleth-users
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name>Shibboleth Development</name>
+			<subscribe>http://shibboleth.internet2.edu/support.html#lists
+			</subscribe>
+			<unsubscribe>http://shibboleth.internet2.edu/support.html#lists
+			</unsubscribe>
+			<post>shibboleth-dev@internet2.edu</post>
+			<archive>https://mail.internet2.edu/wws/arc/shibboleth-dev</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:svn:https://svn.middleware.georgetown.edu/shib-extension/java-samlsign/</connection>
+		<developerConnection>scm:svn:https://svn.middleware.georgetown.edu/shib-extension/java-samlsign/
+		</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://svn.middleware.georgetown.edu/view/?root=shib-extension</url>
+	</scm>
+
+</project>
