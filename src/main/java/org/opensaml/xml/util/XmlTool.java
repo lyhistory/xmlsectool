@@ -66,7 +66,6 @@ import org.opensaml.xml.signature.Signature;
 import org.opensaml.xml.signature.SignatureConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.MessageFormatter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -212,7 +211,7 @@ public final class XmlTool {
             }
             return new FileInputStream(cli.getInputFile());
         } catch (FileNotFoundException e) {
-            log.error(MessageFormatter.format("Unable to read input file '{}'", cli.getInputFile()), e);
+            log.error("Unable to read input file '{}'", cli.getInputFile(), e);
             System.exit(RC_IO);
         }
 
@@ -244,13 +243,12 @@ public final class XmlTool {
             HttpClient httpClient = httpClientBuilder.buildClient();
             httpClient.executeMethod(getMethod);
             if (getMethod.getStatusCode() != HttpStatus.SC_OK) {
-                log.error(MessageFormatter.format("Non-ok status code '{}' returned by '{}'",
-                        getMethod.getStatusCode(), cli.getInputUrl()));
+                log.error("Non-ok status code '{}' returned by '{}'", getMethod.getStatusCode(), cli.getInputUrl());
                 System.exit(RC_IO);
             }
             return getMethod.getResponseBodyAsStream();
         } catch (IOException e) {
-            log.error(MessageFormatter.format("Unable to read XML document from '{}'", cli.getInputUrl()), e);
+            log.error("Unable to read XML document from '{}'", cli.getInputUrl(), e);
             System.exit(RC_IO);
         }
 
@@ -315,7 +313,7 @@ public final class XmlTool {
             System.exit(RC_INVALID_XML);
         }
     }
-        
+
     /**
      * Signs and outputs the signed SAML document.
      * 
@@ -354,7 +352,8 @@ public final class XmlTool {
             Transforms contentTransforms = new Transforms(xml);
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_ENVELOPED_SIGNATURE);
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
-            signature.addDocument(getSignatureReferenceUri(cli, documentRoot), contentTransforms, SignatureConstants.ALGO_ID_DIGEST_SHA1);
+            signature.addDocument(getSignatureReferenceUri(cli, documentRoot), contentTransforms,
+                    SignatureConstants.ALGO_ID_DIGEST_SHA1);
 
             log.debug("Creating Signature DOM element");
             signatureElement = signature.getElement();
@@ -407,29 +406,30 @@ public final class XmlTool {
     }
 
     /**
-     * Gets the reference of the URI to use for the signature.  If a reference attribute name is given, is present 
-     * on the document root element, and contains a value, that value is used.  Otherwise an empty string is used.
-     *  
+     * Gets the reference of the URI to use for the signature. If a reference attribute name is given, is present on the
+     * document root element, and contains a value, that value is used. Otherwise an empty string is used.
+     * 
      * @param cli command line arguments
      * @param rootElement document root element
      * 
      * @return the signature reference URI, never null
      */
-    protected static String getSignatureReferenceUri(XmlToolCommandLineArguments cli, Element rootElement){
+    protected static String getSignatureReferenceUri(XmlToolCommandLineArguments cli, Element rootElement) {
         String reference = "";
-        if(cli.getReferenceIdAttributeName() != null){
-            Attr referenceAttribute = (Attr)rootElement.getAttributes().getNamedItem(cli.getReferenceIdAttributeName());
-            if(referenceAttribute != null){
+        if (cli.getReferenceIdAttributeName() != null) {
+            Attr referenceAttribute = (Attr) rootElement.getAttributes()
+                    .getNamedItem(cli.getReferenceIdAttributeName());
+            if (referenceAttribute != null) {
                 reference = DatatypeHelper.safeTrim(referenceAttribute.getValue());
-                if(reference.length() > 0){
+                if (reference.length() > 0) {
                     reference = "#" + reference;
                 }
             }
         }
-        
+
         return reference;
     }
-    
+
     /**
      * Adds the signature element at the appropriate place in the document.
      * 
@@ -507,15 +507,18 @@ public final class XmlTool {
         try {
             if (signature.checkSignatureValue(verificationKey)) {
                 log.info("XML document signature verified.");
+            } else {
+                log.error("XML document signature verification failed");
+                System.exit(RC_SIG);
             }
         } catch (XMLSignatureException e) {
-            log.error("XML document signature verification failed", e);
+            log.error("XML document signature verification failed with an error", e);
             System.exit(RC_SIG);
         }
     }
 
     /**
-     * Gets the signature element from the document.  The signature must be a child of the document root.
+     * Gets the signature element from the document. The signature must be a child of the document root.
      * 
      * @param xmlDoc document from which to pull the signature
      * 
@@ -548,8 +551,8 @@ public final class XmlTool {
         BasicX509Credential credential = null;
         if (cli.getCertificate() != null) {
             try {
-                credential = CredentialHelper.getFileBasedCredentials(cli.getKey(), cli.getKeyPassword(), cli
-                        .getCertificate());
+                credential = CredentialHelper.getFileBasedCredentials(cli.getKey(), cli.getKeyPassword(),
+                        cli.getCertificate());
             } catch (KeyException e) {
                 log.error("Unable to read key file " + cli.getKey(), e);
                 System.exit(RC_IO);
@@ -559,8 +562,8 @@ public final class XmlTool {
             }
         } else if (cli.getPkcs11Config() != null) {
             try {
-                credential = CredentialHelper.getPKCS11Credential(cli.getKeystore(), cli.getPkcs11Config(), cli
-                        .getKey(), cli.getKeyPassword());
+                credential = CredentialHelper.getPKCS11Credential(cli.getKeystore(), cli.getPkcs11Config(),
+                        cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Error accessing PKCS11 store", e);
                 System.exit(RC_IO);
@@ -570,8 +573,8 @@ public final class XmlTool {
             }
         } else {
             try {
-                credential = CredentialHelper.getKeystoreCredential(cli.getKeystore(), cli.getKeystorePassword(), cli
-                        .getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
+                credential = CredentialHelper.getKeystoreCredential(cli.getKeystore(), cli.getKeystorePassword(),
+                        cli.getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Unable to read keystore " + cli.getKeystore(), e);
                 System.exit(RC_IO);
@@ -581,7 +584,7 @@ public final class XmlTool {
             }
         }
 
-        if(cli.getKeyInfoKeyNames() != null){
+        if (cli.getKeyInfoKeyNames() != null) {
             credential.getKeyNames().addAll(cli.getKeyInfoKeyNames());
         }
         credential.setCRLs(getCRLs(cli));
@@ -632,12 +635,12 @@ public final class XmlTool {
             log.debug("Attempting to write output to file {}", cli.getOutputFile());
             File file = new File(cli.getOutputFile());
             if (file.exists() && file.isDirectory()) {
-                log.error(MessageFormatter.format("Output file {} is a directory", cli.getOutputFile()));
+                log.error("Output file {} is a directory", cli.getOutputFile());
                 System.exit(RC_IO);
             }
             file.createNewFile();
             if (!file.canWrite()) {
-                log.error(MessageFormatter.format("Unable to write to output file {}", cli.getOutputFile()));
+                log.error("Unable to write to output file {}", cli.getOutputFile());
                 System.exit(RC_IO);
             }
 
@@ -655,7 +658,7 @@ public final class XmlTool {
             output.close();
             log.info("XML document written to file {}", file.getAbsolutePath());
         } catch (IOException e) {
-            log.error(MessageFormatter.format("Unable to write document to file {}", cli.getOutputFile()), e);
+            log.error("Unable to write document to file {}", cli.getOutputFile(), e);
             System.exit(RC_IO);
         }
     }

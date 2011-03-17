@@ -10,12 +10,11 @@
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <File>${org.opensaml.xml.util.XmlTool.home}/xmltool.log</File>
-        <Encoding>UTF-8</Encoding>
         <Append>false</Append>
-        <ImmediateFlush>true</ImmediateFlush>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>%date{HH:mm:ss.SSS} - %level [%logger:%line] - %msg%n</Pattern>
-        </layout>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%date{HH:mm:ss.SSS} - %level [%logger:%line] - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
     </appender>
 
     <logger name="org.opensaml.xml.util" level="info" />
