@@ -30,12 +30,14 @@ public class CredentialHelper {
     /**
      * Reads in the X509 credentials from the filesystem.
      * 
-     * @param cli command line arguments
+     * @param keyFile path to the private key file
+     * @param keyPassword password for the private key, may be null
+     * @param certificateFile path to the certificate file associated with the private key
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getFileBasedCredentials(String keyFile, String keyPassword, String certificateFile)
-            throws KeyException, CertificateException {
+    protected static BasicX509Credential getFileBasedCredentials(String keyFile, String keyPassword,
+            String certificateFile) throws KeyException, CertificateException {
         BasicX509Credential credential = new BasicX509Credential();
         LOG.debug("Reading PEM/DER encoded credentials from the filesystem");
         if (keyFile != null) {
@@ -55,7 +57,12 @@ public class CredentialHelper {
     /**
      * Reads in the X509 credentials from a keystore.
      * 
-     * @param cli command line arguments
+     * @param keystorePath path the keystore file
+     * @param keystorePassword keystore password
+     * @param keystoreProvider keystore providr identifier
+     * @param keystoreType keystore type
+     * @param keyAlias private key alias
+     * @param keyPassword private key password
      * 
      * @return the credentials
      */
@@ -68,9 +75,9 @@ public class CredentialHelper {
         if (storeType == null) {
             storeType = KeyStore.getDefaultType();
         }
-        
+
         String storePassword = keystorePassword;
-        if(storePassword == null){
+        if (storePassword == null) {
             storePassword = keyPassword;
         }
 
@@ -92,13 +99,16 @@ public class CredentialHelper {
     /**
      * Reads in the X509 credentials from a PKCS11 source.
      * 
-     * @param cli command line arguments
+     * @param keystoreProvider keystore provider class
+     * @param pkcs11Config PKCS11 configuration file used by the keystore provider
+     * @param keyAlias private key keystore alias
+     * @param keyPassword private key password
      * 
      * @return the credentials
      */
     @SuppressWarnings("unchecked")
-    protected static BasicX509Credential getPKCS11Credential(String keystoreProvider, String pkcs11Config, String keyAlias,
-            String keyPassword) throws IOException, GeneralSecurityException {
+    protected static BasicX509Credential getPKCS11Credential(String keystoreProvider, String pkcs11Config,
+            String keyAlias, String keyPassword) throws IOException, GeneralSecurityException {
         LOG.debug("Install PKCS11 provider");
 
         KeyStore keystore = null;
@@ -140,14 +150,15 @@ public class CredentialHelper {
     /**
      * Gets a credential from the given store.
      * 
-     * @param cli command line arguments
      * @param keystore keystore from which to extract the credentials
+     * @param keyAlias keystore key alias
+     * @param keyPassword private key password
      * 
      * @return the extracted credential
      */
     @SuppressWarnings("unchecked")
-    protected static BasicX509Credential getCredentialFromKeystore(KeyStore keystore, String keyAlias, String keyPassword)
-            throws GeneralSecurityException {
+    protected static BasicX509Credential getCredentialFromKeystore(KeyStore keystore, String keyAlias,
+            String keyPassword) throws GeneralSecurityException {
 
         KeyStore.Entry keyEntry = keystore.getEntry(keyAlias,
                 new KeyStore.PasswordProtection(keyPassword.toCharArray()));

@@ -22,7 +22,7 @@ import jargs.gnu.CmdLineParser.OptionException;
 import java.io.PrintStream;
 import java.util.List;
 
-/** Command line arguments for the {@link SAMLSign} command line tool. */
+/** Command line arguments for the {@link XmlTool} command line tool. */
 public class XmlToolCommandLineArguments {
 
     // Actions

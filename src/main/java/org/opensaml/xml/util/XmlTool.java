@@ -101,7 +101,7 @@ public final class XmlTool {
     /** Return code indicating indicating that signing or signature verification failed, {@value} . */
     public static final int RC_SIG = 7;
 
-    /** Return code indicating an unknown error occurred, {@value. } */
+    /** Return code indicating an unknown error occurred, {@value} . */
     public static final int RC_UNKNOWN = -1;
 
     /** Class logger. */
@@ -318,7 +318,7 @@ public final class XmlTool {
      * Signs and outputs the signed SAML document.
      * 
      * @param cli command line arguments
-     * @param samlDocument SAML documents to be signed
+     * @param xml document to be signed
      */
     protected static void sign(XmlToolCommandLineArguments cli, Document xml) {
         log.debug("Preparing to sign document");
@@ -434,7 +434,7 @@ public final class XmlTool {
      * Adds the signature element at the appropriate place in the document.
      * 
      * @param cli command line argument
-     * @param document document to which the signature will be added
+     * @param root element to which the signature will be added as a child
      * @param signature signature to be added to the document's root element
      */
     protected static void addSignatureELement(XmlToolCommandLineArguments cli, Element root, Element signature) {
