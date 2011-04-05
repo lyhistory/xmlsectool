@@ -1,0 +1,4 @@
+Changes in Release 1.1.2
+=============================================
+[XSTJ-1] - Update dependency libraries for version 1.1.2
+[XSTJ-2] - non-zero status code not returned when a signature is invalid

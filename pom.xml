@@ -4,9 +4,9 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>edu.internet2.middleware</groupId>
+	<groupId>net.shibboleth.tool</groupId>
 	<artifactId>xmlsectool</artifactId>
-	<version>1.1.2-SNAPSHOT</version>
+	<version>1.1.2</version>
 	<packaging>jar</packaging>
 
 	<name>XMLTool</name>
@@ -20,27 +20,29 @@
         <slf4j.groupId>org.slf4j</slf4j.groupId>
         <slf4j.version>1.6.1</slf4j.version>
         <xerces.groupId>org.apache.xerces</xerces.groupId>
-        <xerces.version>2.9.1</xerces.version>
+        <xerces.version>2.10.0</xerces.version>
+        <xmlresolver.groupId>xml-resolver</xmlresolver.groupId>
+        <xmlresolver.version>1.2</xmlresolver.version>
+        <xalan.groupId>xalan</xalan.groupId>
+        <xalan.version>2.7.1</xalan.version>
     </properties>
 
-	<repositories>
-		<repository>
-			<id>shibboleth.internet2.edu</id>
-			<name>Internet2</name>
-			<layout>default</layout>
-			<url>http://shibboleth.internet2.edu/downloads/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<distributionManagement>
-		<repository>
-			<id>release-repo</id>
-			<url>${dist.release.url}</url>
-		</repository>
-	</distributionManagement>
+    <repositories>
+        <repository>
+            <id>shib-release</id>
+            <url>https://shibboleth.net/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>shib-snapshot</id>
+            <url>https://shibboleth.net/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
 
 	<dependencies>
 		<!-- Compile dependencies -->
@@ -96,29 +98,41 @@
         </dependency>
         <dependency>
             <groupId>${xerces.groupId}</groupId>
-            <artifactId>resolver</artifactId>
-            <version>${xerces.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${xerces.groupId}</groupId>
             <artifactId>serializer</artifactId>
             <version>${xerces.version}</version>
             <scope>runtime</scope>
         </dependency>
-		<dependency>
-			<groupId>org.apache.xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>${xmlresolver.groupId}</groupId>
+            <artifactId>xml-resolver</artifactId>
+            <version>${xmlresolver.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${xalan.groupId}</groupId>
+            <artifactId>xalan</artifactId>
+            <version>${xalan.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 	</dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>release</id>
+            <url>https://shibboleth.net/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>https://shibboleth.net/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
@@ -128,6 +142,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/assembly/bin.xml</descriptor>
@@ -143,6 +158,35 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <quiet>true</quiet>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 
@@ -151,6 +195,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
 				<configuration>
 					<links>
 						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
@@ -165,9 +210,34 @@
 			</plugin>
 		</plugins>
 	</reporting>
+    
+        <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.2</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
 
 	<!-- Project Metadata -->
-	<url>https://shibboleth.internet2.edu/</url>
+	<url>http://shibboleth.net/</url>
 
 	<inceptionYear>2009</inceptionYear>
 	<licenses>
@@ -221,11 +291,11 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:svn:https://svn.middleware.georgetown.edu/shib-extension/java-samlsign/</connection>
-		<developerConnection>scm:svn:https://svn.middleware.georgetown.edu/shib-extension/java-samlsign/
+		<connection>scm:svn:https://svn.shibboleth.net/utilities/xmlsectool</connection>
+		<developerConnection>scm:svn:https://svn.shibboleth.net/utilities/xmlsectool
 		</developerConnection>
 		<tag>HEAD</tag>
-		<url>http://svn.middleware.georgetown.edu/view/?root=shib-extension</url>
+		<url>http://svn.shibboleth.net/view/utilities/xmlsectool</url>
 	</scm>
 
 </project>
