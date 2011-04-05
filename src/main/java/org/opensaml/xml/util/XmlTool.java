@@ -360,6 +360,7 @@ public final class XmlTool {
 
             addSignatureELement(cli, documentRoot, signatureElement);
             signature.sign(SecurityHelper.extractSigningKey(signingCredential));
+            log.info("XML document successfully signed");
         } catch (XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
             System.exit(RC_SIG);

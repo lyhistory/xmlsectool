@@ -5,13 +5,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.security.Provider;
 import java.security.Security;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -23,8 +22,10 @@ import org.opensaml.xml.security.x509.X509Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Helper class for reading in cryptographic credentials. */
 public class CredentialHelper {
 
+    /** Class logger. */
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
 
     /**
@@ -42,7 +43,11 @@ public class CredentialHelper {
         LOG.debug("Reading PEM/DER encoded credentials from the filesystem");
         if (keyFile != null) {
             LOG.debug("Reading private key from file {}", keyFile);
-            credential.setPrivateKey(SecurityHelper.decodePrivateKey(new File(keyFile), keyPassword.toCharArray()));
+            if (keyPassword == null) {
+                credential.setPrivateKey(SecurityHelper.decodePrivateKey(new File(keyFile), null));
+            } else {
+                credential.setPrivateKey(SecurityHelper.decodePrivateKey(new File(keyFile), keyPassword.toCharArray()));
+            }
             LOG.debug("Private key succesfully read");
         }
         LOG.debug("Reading certificates from file {}", certificateFile);
@@ -62,7 +67,7 @@ public class CredentialHelper {
      * @param keystoreProvider keystore providr identifier
      * @param keystoreType keystore type
      * @param keyAlias private key alias
-     * @param keyPassword private key password
+     * @param keyPassword private key password, may not be null
      * 
      * @return the credentials
      */
@@ -89,10 +94,6 @@ public class CredentialHelper {
         }
         keystore.load(new FileInputStream(keystorePath), storePassword.toCharArray());
 
-        if (keyPassword == null) {
-            keyPassword = keystorePassword;
-        }
-
         return getCredentialFromKeystore(keystore, keyAlias, keyPassword);
     }
 
@@ -102,7 +103,7 @@ public class CredentialHelper {
      * @param keystoreProvider keystore provider class
      * @param pkcs11Config PKCS11 configuration file used by the keystore provider
      * @param keyAlias private key keystore alias
-     * @param keyPassword private key password
+     * @param keyPassword private key password, may not be null
      * 
      * @return the credentials
      */
@@ -127,19 +128,9 @@ public class CredentialHelper {
                 LOG.debug("Creating PKCS11 keystore with system wide provider and configuration file");
                 keystore = KeyStore.getInstance("PKCS11");
             }
-        } catch (ClassNotFoundException e) {
-            // TODO
-        } catch (NoSuchMethodException e) {
-            // TODO
-        } catch (InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOG.error("Unable to read PKCS12 keystore", e);
+            throw new IOException("Unable to read PKCS12 keystore", e);
         }
 
         LOG.debug("Initializing PKCS11 keystore");
