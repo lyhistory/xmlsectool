@@ -177,11 +177,6 @@ public final class XmlSecTool {
         }
 
         DocumentBuilder xmlParser = getParser(cli);
-        if (cli.isBase64DecodeInput()) {
-            log.debug("Passing XML inpustream through Base64 decoder.");
-            xmlInputStream = new org.opensaml.xml.util.Base64.InputStream(xmlInputStream);
-        }
-
         try {
             log.debug("Parsing XML input stream");
             Document xmlDoc = xmlParser.parse(xmlInputStream);
@@ -223,6 +218,10 @@ public final class XmlSecTool {
             }
 
             InputStream ins = new FileInputStream(cli.getInputFile());
+            if (cli.isBase64DecodeInput()) {
+                log.debug("Passing XML inpustream through Base64 decoder.");
+                ins = new Base64.InputStream(ins);
+            }
             if (cli.isInflateInput()) {
                 log.debug("Passing input file data through Inflater decompression filter");
                 ins = new InflaterInputStream(ins);
@@ -278,6 +277,10 @@ public final class XmlSecTool {
             if ("gzip".equalsIgnoreCase(contentEncoding)) {
                 log.debug("Passing input file data through GZip decompression filter");
                 ins = new GZIPInputStream(ins);
+            }
+            if (cli.isBase64DecodeInput()) {
+                log.debug("Passing XML inpustream through Base64 decoder.");
+                ins = new Base64.InputStream(ins);
             }
             return ins;
         } catch (IOException e) {
@@ -676,7 +679,12 @@ public final class XmlSecTool {
                 log.error("Unable to write to output file " + cli.getOutputFile());
                 System.exit(2);
             }
+            
             OutputStream out = new FileOutputStream(cli.getOutputFile());
+            if (cli.isBase64EncodedOutput()) {
+                log.debug("Base64 encoding output to file");
+                out = new Base64.OutputStream(out);
+            }
             if (cli.isDeflateOutput()) {
                 log.debug("Deflate compressing output to file");
                 out = new DeflaterOutputStream(out);
@@ -685,10 +693,7 @@ public final class XmlSecTool {
                 log.debug("GZip compressing output to file");
                 out = new GZIPOutputStream(out);
             }
-            if (cli.isBase64EncodedOutput()) {
-                log.debug("Base64 encoding output to file");
-                out = new org.opensaml.xml.util.Base64.OutputStream(new FileOutputStream(cli.getOutputFile()));
-            }
+            
             log.debug("Writting XML document to output file {}", cli.getOutputFile());
             try {
                 TransformerFactory tfac = TransformerFactory.newInstance();
