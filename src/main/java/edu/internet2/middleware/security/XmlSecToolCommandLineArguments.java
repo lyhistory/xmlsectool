@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opensaml.xml.util;
+package edu.internet2.middleware.security;
 
 import jargs.gnu.CmdLineParser;
 import jargs.gnu.CmdLineParser.OptionException;
@@ -22,8 +22,8 @@ import jargs.gnu.CmdLineParser.OptionException;
 import java.io.PrintStream;
 import java.util.List;
 
-/** Command line arguments for the {@link XmlTool} command line tool. */
-public class XmlToolCommandLineArguments {
+/** Command line arguments for the {@link XmlSecTool} command line tool. */
+public class XmlSecToolCommandLineArguments {
 
     // Actions
     private boolean sign;
@@ -46,6 +46,18 @@ public class XmlToolCommandLineArguments {
     private String inUrl;
 
     private CmdLineParser.Option IN_URL_ARG;
+
+    private boolean base64DecodeInput;
+
+    private CmdLineParser.Option BASE64_IN_ARG;
+
+    private boolean inflateInput;
+
+    private CmdLineParser.Option INFLATE_IN_ARG;
+
+    private boolean gunzipInput;
+
+    private CmdLineParser.Option GUNZIP_IN_ARG;
 
     private String httpProxy;
 
@@ -110,6 +122,14 @@ public class XmlToolCommandLineArguments {
 
     private CmdLineParser.Option BASE64_OUT_ARG;
 
+    private boolean deflateOutput;
+
+    private CmdLineParser.Option DEFLATE_OUT_ARG;
+
+    private boolean gzipOutput;
+
+    private CmdLineParser.Option GZIP_OUT_ARG;
+
     // Key/Cert Data
     private String cert;
 
@@ -163,7 +183,7 @@ public class XmlToolCommandLineArguments {
 
     private CmdLineParser cliParser;
 
-    public XmlToolCommandLineArguments(String[] args) {
+    public XmlSecToolCommandLineArguments(String[] args) {
         cliParser = new CmdLineParser();
 
         SIGN_ARG = cliParser.addBooleanOption("sign");
@@ -171,6 +191,9 @@ public class XmlToolCommandLineArguments {
         V_SIG_ARG = cliParser.addBooleanOption("verifySignature");
         IN_FILE_ARG = cliParser.addStringOption("inFile");
         IN_URL_ARG = cliParser.addStringOption("inUrl");
+        BASE64_IN_ARG = cliParser.addBooleanOption("base64DecodeInput");
+        INFLATE_IN_ARG = cliParser.addBooleanOption("inflateInput");
+        GUNZIP_IN_ARG = cliParser.addBooleanOption("gunzipInput");
         HTTP_PROXY_ARG = cliParser.addStringOption("httpProxy");
         HTTP_PROXY_PORT_ARG = cliParser.addIntegerOption("httpProxyPort");
         HTTP_PROXY_USERNAME_ARG = cliParser.addStringOption("httpProxyUsername");
@@ -186,6 +209,8 @@ public class XmlToolCommandLineArguments {
         KI_CRL_ARG = cliParser.addStringOption("keyInfoCRL");
         OUT_FILE_ARG = cliParser.addStringOption("outFile");
         BASE64_OUT_ARG = cliParser.addBooleanOption("base64EncodeOutput");
+        DEFLATE_OUT_ARG = cliParser.addBooleanOption("deflateOutput");
+        GZIP_OUT_ARG = cliParser.addBooleanOption("gzipOutput");
         CERT_ARG = cliParser.addStringOption("certificate");
         KEY_ARG = cliParser.addStringOption("key");
         KEY_PASSWORD_ARG = cliParser.addStringOption("keyPassword");
@@ -209,6 +234,9 @@ public class XmlToolCommandLineArguments {
             signatureVerify = (Boolean) cliParser.getOptionValue(V_SIG_ARG, Boolean.FALSE);
             inFile = (String) cliParser.getOptionValue(IN_FILE_ARG);
             inUrl = (String) cliParser.getOptionValue(IN_URL_ARG);
+            base64DecodeInput = ((Boolean) cliParser.getOptionValue(BASE64_IN_ARG, Boolean.FALSE)).booleanValue();
+            inflateInput = ((Boolean) cliParser.getOptionValue(INFLATE_IN_ARG, Boolean.FALSE)).booleanValue();
+            gunzipInput = ((Boolean) cliParser.getOptionValue(GUNZIP_IN_ARG, Boolean.FALSE)).booleanValue();
             schemaDirectory = (String) cliParser.getOptionValue(SCHEMA_DIR_ARG);
             xsdSchema = (Boolean) cliParser.getOptionValue(SCHEMA_XSD_LANG_ARG, Boolean.FALSE);
             rngSchema = (Boolean) cliParser.getOptionValue(SCHEMA_RNG_LANG_ARG, Boolean.FALSE);
@@ -223,6 +251,8 @@ public class XmlToolCommandLineArguments {
             kiCrls = (List<String>) cliParser.getOptionValues(KI_CRL_ARG);
             outFile = (String) cliParser.getOptionValue(OUT_FILE_ARG);
             base64EncodeOutput = (Boolean) cliParser.getOptionValue(BASE64_OUT_ARG, Boolean.FALSE);
+            deflateOutput = ((Boolean) cliParser.getOptionValue(DEFLATE_OUT_ARG, Boolean.FALSE)).booleanValue();
+            gzipOutput = ((Boolean) cliParser.getOptionValue(GZIP_OUT_ARG, Boolean.FALSE)).booleanValue();
             httpProxy = (String) cliParser.getOptionValue(HTTP_PROXY_ARG);
             httpProxyPort = (Integer) cliParser.getOptionValue(HTTP_PROXY_PORT_ARG, 80);
             httpProxyUsername = (String) cliParser.getOptionValue(HTTP_PROXY_USERNAME_ARG);
@@ -305,6 +335,18 @@ public class XmlToolCommandLineArguments {
         return inUrl;
     }
 
+    public boolean isBase64DecodeInput() {
+        return base64DecodeInput;
+    }
+
+    public boolean isInflateInput() {
+        return inflateInput;
+    }
+
+    public boolean isGunzipInput() {
+        return gunzipInput;
+    }
+
     public String getSchemaDirectory() {
         return schemaDirectory;
     }
@@ -323,6 +365,14 @@ public class XmlToolCommandLineArguments {
 
     public boolean isBase64EncodedOutput() {
         return base64EncodeOutput;
+    }
+
+    public boolean isDeflateOutput() {
+        return deflateOutput;
+    }
+
+    public boolean isGzipOutput() {
+        return gzipOutput;
     }
 
     public String getCertificate() {
@@ -386,6 +436,11 @@ public class XmlToolCommandLineArguments {
             errorAndExit("One, and only one, document input method must be specified");
         }
 
+        if (isInflateInput() && isGunzipInput()) {
+            errorAndExit((new StringBuilder("Options ")).append(INFLATE_IN_ARG.longForm()).append(" and ")
+                    .append(GUNZIP_IN_ARG.longForm()).append(" are mutually exclusive").toString());
+        }
+
         if (doSchemaValidation()) {
             if (getSchemaDirectory() == null) {
                 errorAndExit(SCHEMA_DIR_ARG.longForm() + " option is required");
@@ -406,7 +461,7 @@ public class XmlToolCommandLineArguments {
             }
 
         }
-        
+
         if (doSign()) {
             if (getKey() == null) {
                 errorAndExit(KEY_ARG.longForm() + " option is required");
@@ -419,6 +474,11 @@ public class XmlToolCommandLineArguments {
             if (getOutputFile() == null) {
                 errorAndExit("No output location specified");
             }
+        }
+
+        if (isDeflateOutput() && isGzipOutput()) {
+            errorAndExit((new StringBuilder("Options ")).append(DEFLATE_OUT_ARG.longForm()).append(" and ")
+                    .append(GZIP_OUT_ARG.longForm()).append(" are mutually exclusive").toString());
         }
 
         if (doVerboseOutput() && doQuietOutput()) {
@@ -434,8 +494,7 @@ public class XmlToolCommandLineArguments {
      */
     public void printHelp(PrintStream out) {
         out.println("XML Tool");
-        out
-                .println("Provides a command line interface for schema validating, signing, and signature validating an XML file.");
+        out.println("Provides a command line interface for schema validating, signing, and signature validating an XML file.");
         out.println();
         out.println("==== Command Line Options ====");
         out.println();
@@ -454,6 +513,18 @@ public class XmlToolCommandLineArguments {
                 "Specifies the file from which the SAML document will be read."));
         out.println(String.format("  --%-20s %s", IN_URL_ARG.longForm(),
                 "Specifies the URL from which the SAML document will be read. HTTPS certificates are not validated."));
+        out.println(String.format("  --%-20s %s", BASE64_IN_ARG.longForm(),
+                "Base64 decodes input.  Useful when reading in data produced with the " + BASE64_OUT_ARG.longForm()
+                        + " option"));
+        out.println(String.format("  --%-20s %s", INFLATE_IN_ARG.longForm(),
+                "Inflates a file created with the \"deflate\" compression algorithm.  This property is ignored if "
+                        + IN_URL_ARG.longForm()
+                        + " is used.  Instead the returned headers determine if content was deflated"));
+        out.println(String.format("  --%-20s %s", GUNZIP_IN_ARG.longForm(),
+                "Inflates a file created with the \"gzip\" compression algorithm.  This property is ignored if "
+                        + IN_URL_ARG.longForm()
+                        + " is used.  Instead the returned headers determine if content was gzip'ed"));
+
         out.println(String.format("  --%-20s %s", HTTP_PROXY_ARG.longForm(),
                 "HTTP proxy address used when fetching URL-based input files."));
         out.println(String.format("  --%-20s %s", HTTP_PROXY_PORT_ARG.longForm(), "HTTP proxy port. (default: 80)"));
@@ -476,12 +547,10 @@ public class XmlToolCommandLineArguments {
         out.println("Signature Creation Options");
         out.println(String.format("  --%-20s %s", SIG_REQUIRED_ARG.longForm(),
                 "Specifies that the document being verified is required to contain a signature."));
-        out
-                .println(String
-                        .format(
-                                "  --%-20s %s",
-                                SIG_REF_ID_ATT_ARG.longForm(),
-                                "Specifies that the name of the attribute, on the document element, whose value is used as the URI reference of the signature"));
+        out.println(String.format(
+                "  --%-20s %s",
+                SIG_REF_ID_ATT_ARG.longForm(),
+                "Specifies that the name of the attribute, on the document element, whose value is used as the URI reference of the signature"));
         out.println(String.format("  --%-20s %s", SIG_POS_ARG.longForm(),
                 "Specifies, by 1-based index, which element to place the signature BEFORE.  "
                         + "'FIRST' may be used to indicate that the signature goes BEFORE the first element. "
@@ -500,9 +569,8 @@ public class XmlToolCommandLineArguments {
                 "Treat unsigned documents as an error.  (default: true)"));
 
         out.println();
-        out
-                .println("PEM/DER Encoded Certificate/Key Options - these options are mutually exclusive with the Keystore and PKCS11 options."
-                        + " Options '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm() + "' are required.");
+        out.println("PEM/DER Encoded Certificate/Key Options - these options are mutually exclusive with the Keystore and PKCS11 options."
+                + " Options '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm() + "' are required.");
         out.println(String.format("  --%-20s %s", CERT_ARG.longForm(),
                 "Specifies the file from which the signing, or validation, certificate is read."));
         out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
@@ -511,14 +579,13 @@ public class XmlToolCommandLineArguments {
                 "Specifies the password for the signing key."));
 
         out.println();
-        out
-                .println("Keystore Certificate/Key Options - these options are mutually exclusive with the PEM/DER and PKCS11 options."
-                        + " Options '"
-                        + KEYSTORE_ARG.longForm()
-                        + "', '"
-                        + KEY_ARG.longForm()
-                        + "', and '"
-                        + KEY_PASSWORD_ARG.longForm() + "' are required.");
+        out.println("Keystore Certificate/Key Options - these options are mutually exclusive with the PEM/DER and PKCS11 options."
+                + " Options '"
+                + KEYSTORE_ARG.longForm()
+                + "', '"
+                + KEY_ARG.longForm()
+                + "', and '"
+                + KEY_PASSWORD_ARG.longForm() + "' are required.");
         out.println(String.format("  --%-20s %s", KEYSTORE_ARG.longForm(), "Specifies the keystore file."));
         out.println(String.format("  --%-20s %s", KEYSTORE_PASSWORD_ARG.longForm(),
                 "Specifies the password for the keystore. If not provided then the key password is used."));
@@ -531,28 +598,22 @@ public class XmlToolCommandLineArguments {
                 "Specifies the password for the signing key. Keystore password used if none is given."));
 
         out.println();
-        out
-                .println("PKCS11 Device Certificate/Key Options - these options are mutually exclusive with the PEM/DER and Keystore options."
-                        + " Options '"
-                        + PKCS11_CONFIG_ARG.longForm()
-                        + "' and '"
-                        + KEY_ARG.longForm()
-                        + "' are required. Option '"
-                        + KEY_PASSWORD_ARG.longForm()
-                        + "' required when signing and, with some PKCS11 devices, during signature verification.");
-        out
-                .println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG.longForm(),
-                        "The PKCS11 token configuration file."));
+        out.println("PKCS11 Device Certificate/Key Options - these options are mutually exclusive with the PEM/DER and Keystore options."
+                + " Options '"
+                + PKCS11_CONFIG_ARG.longForm()
+                + "' and '"
+                + KEY_ARG.longForm()
+                + "' are required. Option '"
+                + KEY_PASSWORD_ARG.longForm()
+                + "' required when signing and, with some PKCS11 devices, during signature verification.");
+        out.println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG.longForm(), "The PKCS11 token configuration file."));
         out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
                 "Specifies the key alias for the signing key is read."));
-        out.println(String
-                .format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(), "Specifies the pin for the signing key."));
-        out
-                .println(String
-                        .format(
-                                "  --%-20s %s",
-                                KEYSTORE_PROVIDER_ARG.longForm(),
-                                "The fully qualified class name of the PKCS11 keystore provider implementation. (default: sun.security.pkcs11.SunPKCS11)"));
+        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(), "Specifies the pin for the signing key."));
+        out.println(String.format(
+                "  --%-20s %s",
+                KEYSTORE_PROVIDER_ARG.longForm(),
+                "The fully qualified class name of the PKCS11 keystore provider implementation. (default: sun.security.pkcs11.SunPKCS11)"));
 
         out.println();
         out.println("Data Output Options - Option '" + OUT_FILE_ARG.longForm() + "' is required.");
@@ -560,6 +621,8 @@ public class XmlToolCommandLineArguments {
                 "Specifies the file to which the signed SAML document will be written."));
         out.println(String.format("  --%-20s %s", BASE64_OUT_ARG.longForm(),
                 "Base64 encode the output. Ensures signed content isn't corrupted."));
+        out.println(String.format("  --%-20s %s", DEFLATE_OUT_ARG.longForm(), "Deflate compresses the output."));
+        out.println(String.format("  --%-20s %s", GZIP_OUT_ARG.longForm(), "GZip compresses the output."));
 
         out.println();
         out.println("Logging Options - these options are mutually exclusive");
@@ -582,6 +645,6 @@ public class XmlToolCommandLineArguments {
         System.out.println();
         printHelp(System.out);
         System.out.flush();
-        System.exit(XmlTool.RC_INIT);
+        System.exit(XmlSecTool.RC_INIT);
     }
 }

@@ -1,5 +1,5 @@
 
-package org.opensaml.xml.util;
+package edu.internet2.middleware.security;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +16,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.X509TrustManager;
+
 import org.opensaml.xml.security.SecurityHelper;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.security.x509.X509Util;
@@ -27,6 +29,23 @@ public class CredentialHelper {
 
     /** Class logger. */
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
+
+    public static X509TrustManager buildNoTrustTrustManager() {
+        X509TrustManager noTrustManager = new X509TrustManager() {
+
+            public void checkClientTrusted(X509Certificate ax509certificate[], String s) {
+            }
+
+            public void checkServerTrusted(X509Certificate ax509certificate[], String s) {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+
+        };
+        return noTrustManager;
+    }
 
     /**
      * Reads in the X509 credentials from the filesystem.
@@ -117,7 +136,7 @@ public class CredentialHelper {
             if (keystoreProvider != null) {
                 LOG.debug("Creating PKCS11 keystore with provider {} and configuration file {}", keystoreProvider,
                         pkcs11Config);
-                Class<Provider> providerClass = (Class<Provider>) XmlTool.class.getClassLoader().loadClass(
+                Class<Provider> providerClass = (Class<Provider>) XmlSecTool.class.getClassLoader().loadClass(
                         keystoreProvider);
                 Constructor<Provider> providerConstructor = providerClass.getConstructor(String.class);
                 Provider pkcs11Provider = providerConstructor.newInstance(pkcs11Config);
@@ -128,6 +147,13 @@ public class CredentialHelper {
                 LOG.debug("Creating PKCS11 keystore with system wide provider and configuration file");
                 keystore = KeyStore.getInstance("PKCS11");
             }
+        } catch (ClassNotFoundException e) {
+            LOG.error((new StringBuilder("Unable to load keystore provider class: ")).append(keystoreProvider)
+                    .toString());
+            System.exit(1);
+        } catch (NoSuchMethodException e) {
+            LOG.error("Keystore provider class does not provide a default, no-argument, constructor");
+            System.exit(1);
         } catch (Exception e) {
             LOG.error("Unable to read PKCS12 keystore", e);
             throw new IOException("Unable to read PKCS12 keystore", e);

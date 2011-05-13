@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opensaml.xml.util;
+package edu.internet2.middleware.security;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,17 +34,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.xml.security.Init;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.keys.content.KeyName;
@@ -52,18 +60,20 @@ import org.apache.xml.security.keys.content.X509Data;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transforms;
-import org.opensaml.Configuration;
-import org.opensaml.DefaultBootstrap;
 import org.opensaml.ws.soap.client.http.HttpClientBuilder;
 import org.opensaml.ws.soap.client.http.TLSProtocolSocketFactory;
 import org.opensaml.xml.schema.SchemaBuilder;
 import org.opensaml.xml.schema.SchemaBuilder.SchemaLanguage;
-import org.opensaml.xml.security.SecurityConfiguration;
+import org.opensaml.xml.security.BasicSecurityConfiguration;
+import org.opensaml.xml.security.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xml.security.SecurityHelper;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.security.x509.X509Util;
 import org.opensaml.xml.signature.Signature;
 import org.opensaml.xml.signature.SignatureConstants;
+import org.opensaml.xml.util.Base64;
+import org.opensaml.xml.util.DatatypeHelper;
+import org.opensaml.xml.util.XMLHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -73,9 +83,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import edu.internet2.middleware.shibboleth.DelegateToApplicationX509TrustManager;
-
-public final class XmlTool {
+public final class XmlSecTool {
 
     /** Return code indicating command completed successfully, {@value} . */
     public static final int RC_OK = 0;
@@ -111,7 +119,7 @@ public final class XmlTool {
      * @param args
      */
     public static void main(String[] args) {
-        XmlToolCommandLineArguments cli = new XmlToolCommandLineArguments(args);
+        XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments(args);
         cli.parseCommandLineArguments(args);
 
         if (cli.doHelp()) {
@@ -120,12 +128,12 @@ public final class XmlTool {
         }
 
         initLogging(cli);
+
         try {
-            org.apache.xml.security.Init.init();
-            DefaultBootstrap.bootstrap();
+            Init.init();
         } catch (Throwable e) {
-            log.error("Unable to initialize OpenSAML and XML security libraries", e);
-            System.exit(RC_INIT);
+            log.error("Unable to initialize XML security libraries", e);
+            System.exit(1);
         }
 
         try {
@@ -160,7 +168,7 @@ public final class XmlTool {
      * 
      * @return the parsed DOM document
      */
-    protected static Document parseXML(XmlToolCommandLineArguments cli) {
+    protected static Document parseXML(XmlSecToolCommandLineArguments cli) {
         InputStream xmlInputStream;
         if (cli.getInputFile() != null) {
             xmlInputStream = getXmlInputStreamFromFile(cli);
@@ -169,6 +177,10 @@ public final class XmlTool {
         }
 
         DocumentBuilder xmlParser = getParser(cli);
+        if (cli.isBase64DecodeInput()) {
+            log.debug("Passing XML inpustream through Base64 decoder.");
+            xmlInputStream = new org.opensaml.xml.util.Base64.InputStream(xmlInputStream);
+        }
 
         try {
             log.debug("Parsing XML input stream");
@@ -193,7 +205,7 @@ public final class XmlTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromFile(XmlToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromFile(XmlSecToolCommandLineArguments cli) {
         try {
             log.info("Reading XML document from file '{}'", cli.getInputFile());
             File inputFile = new File(cli.getInputFile());
@@ -209,8 +221,19 @@ public final class XmlTool {
                 log.error("Input file '{}' can not be read", cli.getInputFile());
                 System.exit(RC_IO);
             }
-            return new FileInputStream(cli.getInputFile());
-        } catch (FileNotFoundException e) {
+
+            InputStream ins = new FileInputStream(cli.getInputFile());
+            if (cli.isInflateInput()) {
+                log.debug("Passing input file data through Inflater decompression filter");
+                ins = new InflaterInputStream(ins);
+            }
+            if (cli.isGunzipInput()) {
+                log.debug("Passing input file data through GZip decompression filter");
+                ins = new GZIPInputStream(ins);
+            }
+
+            return ins;
+        } catch (IOException e) {
             log.error("Unable to read input file '{}'", cli.getInputFile(), e);
             System.exit(RC_IO);
         }
@@ -225,33 +248,42 @@ public final class XmlTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromUrl(XmlToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromUrl(XmlSecToolCommandLineArguments cli) {
         log.info("Reading XML document from URL '{}'", cli.getInputUrl());
         HttpClientBuilder httpClientBuilder = new HttpClientBuilder();
-        httpClientBuilder.setHttpsProtocolSocketFactory(new TLSProtocolSocketFactory(null,
-                new DelegateToApplicationX509TrustManager()));
-
+        httpClientBuilder.setHttpsProtocolSocketFactory(new TLSProtocolSocketFactory(null, CredentialHelper
+                .buildNoTrustTrustManager()));
         if (cli.getHttpProxy() != null) {
             httpClientBuilder.setProxyHost(cli.getHttpProxy());
             httpClientBuilder.setProxyPort(cli.getHttpProxyPort());
             httpClientBuilder.setProxyUsername(cli.getHttpProxyUsername());
             httpClientBuilder.setProxyPassword(cli.getHttpProxyPassword());
         }
-
         GetMethod getMethod = new GetMethod(cli.getInputUrl());
+        getMethod.setRequestHeader("Accept-Encoding", "gzip,deflate");
         try {
             HttpClient httpClient = httpClientBuilder.buildClient();
             httpClient.executeMethod(getMethod);
-            if (getMethod.getStatusCode() != HttpStatus.SC_OK) {
-                log.error("Non-ok status code '{}' returned by '{}'", getMethod.getStatusCode(), cli.getInputUrl());
-                System.exit(RC_IO);
+            if (getMethod.getStatusCode() != 200) {
+                log.error("Non-ok status code '" + Integer.valueOf(getMethod.getStatusCode()) + "' returned by '"
+                        + cli.getInputUrl() + "'");
+                System.exit(2);
             }
-            return getMethod.getResponseBodyAsStream();
+            InputStream ins = getMethod.getResponseBodyAsStream();
+            String contentEncoding = getMethod.getResponseHeader("Content-Encoding").getValue();
+            if ("deflate".equalsIgnoreCase(contentEncoding)) {
+                log.debug("Passing input file data through Inflater decompression filter");
+                ins = new InflaterInputStream(ins);
+            }
+            if ("gzip".equalsIgnoreCase(contentEncoding)) {
+                log.debug("Passing input file data through GZip decompression filter");
+                ins = new GZIPInputStream(ins);
+            }
+            return ins;
         } catch (IOException e) {
-            log.error("Unable to read XML document from '{}'", cli.getInputUrl(), e);
-            System.exit(RC_IO);
+            log.error("Unable to read XML document from " + cli.getInputUrl(), e);
         }
-
+        System.exit(2);
         return null;
     }
 
@@ -262,7 +294,7 @@ public final class XmlTool {
      * 
      * @return the DOM parser
      */
-    protected static DocumentBuilder getParser(XmlToolCommandLineArguments cli) {
+    protected static DocumentBuilder getParser(XmlSecToolCommandLineArguments cli) {
         log.debug("Building DOM parser");
         DocumentBuilderFactory newFactory = DocumentBuilderFactory.newInstance();
         newFactory.setCoalescing(false);
@@ -289,7 +321,7 @@ public final class XmlTool {
      * @param cli command line arguments
      * @param xml document to validate
      */
-    protected static void schemaValidate(XmlToolCommandLineArguments cli, Document xml) {
+    protected static void schemaValidate(XmlSecToolCommandLineArguments cli, Document xml) {
         File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
         try {
             Schema schema;
@@ -320,7 +352,7 @@ public final class XmlTool {
      * @param cli command line arguments
      * @param xml document to be signed
      */
-    protected static void sign(XmlToolCommandLineArguments cli, Document xml) {
+    protected static void sign(XmlSecToolCommandLineArguments cli, Document xml) {
         log.debug("Preparing to sign document");
         Element documentRoot = xml.getDocumentElement();
         Element signatureElement;
@@ -333,7 +365,7 @@ public final class XmlTool {
 
         BasicX509Credential signingCredential = getCredential(cli);
 
-        SecurityConfiguration securityConfig = Configuration.getGlobalSecurityConfiguration();
+        BasicSecurityConfiguration securityConfig = DefaultSecurityConfigurationBootstrap.buildDefaultConfig();
         String signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
         boolean hmac = SecurityHelper.isHMAC(signatureAlgorithm);
         Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
@@ -415,7 +447,7 @@ public final class XmlTool {
      * 
      * @return the signature reference URI, never null
      */
-    protected static String getSignatureReferenceUri(XmlToolCommandLineArguments cli, Element rootElement) {
+    protected static String getSignatureReferenceUri(XmlSecToolCommandLineArguments cli, Element rootElement) {
         String reference = "";
         if (cli.getReferenceIdAttributeName() != null) {
             Attr referenceAttribute = (Attr) rootElement.getAttributes()
@@ -438,7 +470,7 @@ public final class XmlTool {
      * @param root element to which the signature will be added as a child
      * @param signature signature to be added to the document's root element
      */
-    protected static void addSignatureELement(XmlToolCommandLineArguments cli, Element root, Element signature) {
+    protected static void addSignatureELement(XmlSecToolCommandLineArguments cli, Element root, Element signature) {
         if ("FIRST".equalsIgnoreCase(cli.getSignaturePosition()) || cli.getSignaturePosition() == null) {
             root.insertBefore(signature, root.getFirstChild());
             return;
@@ -481,7 +513,7 @@ public final class XmlTool {
      * @param cli command line argument
      * @param xmlDocument document whose signature will be validated
      */
-    protected static void verifySignature(XmlToolCommandLineArguments cli, Document xmlDocument) {
+    protected static void verifySignature(XmlSecToolCommandLineArguments cli, Document xmlDocument) {
         Element signatureElement = getSignatureElement(xmlDocument);
         if (signatureElement == null) {
             if (cli.isSignatureRequired()) {
@@ -548,7 +580,7 @@ public final class XmlTool {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getCredential(XmlToolCommandLineArguments cli) {
+    protected static BasicX509Credential getCredential(XmlSecToolCommandLineArguments cli) {
         BasicX509Credential credential = null;
         if (cli.getCertificate() != null) {
             try {
@@ -600,7 +632,7 @@ public final class XmlTool {
      * 
      * @return collection of CRLs
      */
-    protected static Collection<X509CRL> getCRLs(XmlToolCommandLineArguments cli) {
+    protected static Collection<X509CRL> getCRLs(XmlSecToolCommandLineArguments cli) {
         List<String> keyInfoCrls = cli.getKeyInfoCrls();
         if (keyInfoCrls == null || keyInfoCrls.isEmpty()) {
             return Collections.emptyList();
@@ -631,36 +663,48 @@ public final class XmlTool {
      * @param cli command line arguments
      * @param xml the XML element to output
      */
-    protected static void writeDocument(XmlToolCommandLineArguments cli, Node xml) {
+    protected static void writeDocument(XmlSecToolCommandLineArguments cli, Node xml) {
         try {
             log.debug("Attempting to write output to file {}", cli.getOutputFile());
             File file = new File(cli.getOutputFile());
             if (file.exists() && file.isDirectory()) {
-                log.error("Output file {} is a directory", cli.getOutputFile());
-                System.exit(RC_IO);
+                log.error("Output file " + cli.getOutputFile() + " is a directory");
+                System.exit(2);
             }
             file.createNewFile();
             if (!file.canWrite()) {
-                log.error("Unable to write to output file {}", cli.getOutputFile());
-                System.exit(RC_IO);
+                log.error("Unable to write to output file " + cli.getOutputFile());
+                System.exit(2);
             }
-
-            OutputStream output;
+            OutputStream out = new FileOutputStream(cli.getOutputFile());
+            if (cli.isDeflateOutput()) {
+                log.debug("Deflate compressing output to file");
+                out = new DeflaterOutputStream(out);
+            }
+            if (cli.isGzipOutput()) {
+                log.debug("GZip compressing output to file");
+                out = new GZIPOutputStream(out);
+            }
             if (cli.isBase64EncodedOutput()) {
                 log.debug("Base64 encoding output to file");
-                output = new Base64.OutputStream(new FileOutputStream(cli.getOutputFile()));
-            } else {
-                output = new FileOutputStream(cli.getOutputFile());
+                out = new org.opensaml.xml.util.Base64.OutputStream(new FileOutputStream(cli.getOutputFile()));
             }
-
             log.debug("Writting XML document to output file {}", cli.getOutputFile());
-            XMLHelper.writeNode(xml, output);
-            output.flush();
-            output.close();
+            try {
+                TransformerFactory tfac = TransformerFactory.newInstance();
+                Transformer serializer = tfac.newTransformer();
+                serializer.setOutputProperty("encoding", "UTF-8");
+                serializer.transform(new DOMSource(xml), new StreamResult(out));
+            } catch (TransformerException e) {
+                log.error("Unable to write out XML", e);
+                System.exit(2);
+            }
+            out.flush();
+            out.close();
             log.info("XML document written to file {}", file.getAbsolutePath());
         } catch (IOException e) {
-            log.error("Unable to write document to file {}", cli.getOutputFile(), e);
-            System.exit(RC_IO);
+            log.error("Unable to write document to file " + cli.getOutputFile(), e);
+            System.exit(2);
         }
     }
 
@@ -669,7 +713,7 @@ public final class XmlTool {
      * 
      * @param cli command line arguments
      */
-    protected static void initLogging(XmlToolCommandLineArguments cli) {
+    protected static void initLogging(XmlSecToolCommandLineArguments cli) {
         if (cli.getLoggingConfiguration() != null) {
             System.setProperty("logback.configurationFile", cli.getLoggingConfiguration());
         } else if (cli.doVerboseOutput()) {
@@ -680,6 +724,6 @@ public final class XmlTool {
             System.setProperty("logback.configurationFile", "logger-normal.xml");
         }
 
-        log = LoggerFactory.getLogger(XmlTool.class);
+        log = LoggerFactory.getLogger(XmlSecTool.class);
     }
 }

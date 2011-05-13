@@ -41,4 +41,4 @@ do
     fi
 done
 
-"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" '-Djava.endorsed.dirs='"$LIBDIR/endorsed" '-Dorg.opensaml.xml.util.XmlTool.home='"$LOCATION" 'org.opensaml.xml.util.XmlTool' "$@"
+"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" '-Djava.endorsed.dirs='"$LIBDIR/endorsed" '-Dedu.internet2.middleware.security.XmlSecTool.home='"$LOCATION" 'edu.internet2.middleware.security.XmlSecTool' "$@"
