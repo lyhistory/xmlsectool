@@ -219,7 +219,7 @@ public final class XmlSecTool {
 
             InputStream ins = new FileInputStream(cli.getInputFile());
             if (cli.isBase64DecodeInput()) {
-                log.debug("Passing XML inpustream through Base64 decoder.");
+                log.debug("Passing input file through Base64 decoder.");
                 ins = new Base64.InputStream(ins);
             }
             if (cli.isInflateInput()) {
@@ -279,7 +279,7 @@ public final class XmlSecTool {
                 ins = new GZIPInputStream(ins);
             }
             if (cli.isBase64DecodeInput()) {
-                log.debug("Passing XML inpustream through Base64 decoder.");
+                log.debug("Passing input file through Base64 decoder.");
                 ins = new Base64.InputStream(ins);
             }
             return ins;

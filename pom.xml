@@ -9,7 +9,7 @@
 	<version>1.1.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>XMLTool</name>
+	<name>XmlSecTool</name>
 	<description>
         A command line tool for checking an XML file for well-formedness and validity as well as 
         signing and checking signatures.
@@ -21,8 +21,6 @@
         <slf4j.version>1.6.1</slf4j.version>
         <xerces.groupId>org.apache.xerces</xerces.groupId>
         <xerces.version>2.10.0</xerces.version>
-        <xmlresolver.groupId>xml-resolver</xmlresolver.groupId>
-        <xmlresolver.version>1.2</xmlresolver.version>
         <xalan.groupId>xalan</xalan.groupId>
         <xalan.version>2.7.1</xalan.version>
     </properties>
@@ -104,12 +102,6 @@
             <groupId>${xerces.groupId}</groupId>
             <artifactId>serializer</artifactId>
             <version>${xerces.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${xmlresolver.groupId}</groupId>
-            <artifactId>xml-resolver</artifactId>
-            <version>${xmlresolver.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -265,7 +257,7 @@
 
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://bugs.internet2.edu/</url>
+		<url>http://issues.shibboleth.net/</url>
 	</issueManagement>
 
 	<mailingLists>
