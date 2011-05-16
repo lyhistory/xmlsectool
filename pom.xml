@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.shibboleth.tool</groupId>
 	<artifactId>xmlsectool</artifactId>
-	<version>1.1.4-SNAPSHOT</version>
+	<version>1.1.4</version>
 	<packaging>jar</packaging>
 
 	<name>XmlSecTool</name>
@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.opensaml</groupId>
 			<artifactId>openws</artifactId>
-			<version>1.4.1</version>
+			<version>1.4.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>          
@@ -186,34 +186,20 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <links>
+                        <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+                    </links>
                     <quiet>true</quiet>
+                    <author>false</author>
+                    <version>true</version>
+                    <doctitle>${project.name} ${project.version} Java API</doctitle>
+                    <windowtitle>${project.name} ${project.version} Java API</windowtitle>
                 </configuration>
             </plugin>
 		</plugins>
 	</build>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.7</version>
-				<configuration>
-					<links>
-						<link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
-					</links>
-					<quiet>true</quiet>
-					<author>false</author>
-					<version>true</version>
-					<doctitle>${project.name} ${project.version} Java API.</doctitle>
-					<windowtitle>${project.name} ${project.version} Java API.</windowtitle>
-					<overview>src/main/java/overview.html</overview>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
-    
-        <profiles>
+    <profiles>
         <profile>
             <id>release</id>
             <build>
