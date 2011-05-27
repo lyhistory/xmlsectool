@@ -50,6 +50,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.xml.security.Init;
@@ -269,14 +270,17 @@ public final class XmlSecTool {
                 System.exit(2);
             }
             InputStream ins = getMethod.getResponseBodyAsStream();
-            String contentEncoding = getMethod.getResponseHeader("Content-Encoding").getValue();
-            if ("deflate".equalsIgnoreCase(contentEncoding)) {
-                log.debug("Passing input file data through Inflater decompression filter");
-                ins = new InflaterInputStream(ins);
-            }
-            if ("gzip".equalsIgnoreCase(contentEncoding)) {
-                log.debug("Passing input file data through GZip decompression filter");
-                ins = new GZIPInputStream(ins);
+            Header contentEncodingHeader = getMethod.getResponseHeader("Content-Encoding");
+            if (contentEncodingHeader != null) {
+                String contentEncoding = contentEncodingHeader.getValue();
+                if ("deflate".equalsIgnoreCase(contentEncoding)) {
+                    log.debug("Passing input file data through Inflater decompression filter");
+                    ins = new InflaterInputStream(ins);
+                }
+                if ("gzip".equalsIgnoreCase(contentEncoding)) {
+                    log.debug("Passing input file data through GZip decompression filter");
+                    ins = new GZIPInputStream(ins);
+                }
             }
             if (cli.isBase64DecodeInput()) {
                 log.debug("Passing input file through Base64 decoder.");
