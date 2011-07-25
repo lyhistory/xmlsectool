@@ -19,7 +19,6 @@ package edu.internet2.middleware.security;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,9 +58,13 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.keys.content.KeyName;
 import org.apache.xml.security.keys.content.X509Data;
+import org.apache.xml.security.signature.Reference;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.transforms.Transform;
+import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
+import org.apache.xml.security.utils.IdResolver;
 import org.opensaml.ws.soap.client.http.HttpClientBuilder;
 import org.opensaml.ws.soap.client.http.TLSProtocolSocketFactory;
 import org.opensaml.xml.schema.SchemaBuilder;
@@ -458,8 +461,8 @@ public final class XmlSecTool {
     protected static String getSignatureReferenceUri(XmlSecToolCommandLineArguments cli, Element rootElement) {
         String reference = "";
         if (cli.getReferenceIdAttributeName() != null) {
-            Attr referenceAttribute = (Attr) rootElement.getAttributes()
-                    .getNamedItem(cli.getReferenceIdAttributeName());
+            Attr referenceAttribute =
+                    (Attr) rootElement.getAttributes().getNamedItem(cli.getReferenceIdAttributeName());
             if (referenceAttribute != null) {
                 reference = DatatypeHelper.safeTrim(referenceAttribute.getValue());
                 if (reference.length() > 0) {
@@ -543,6 +546,13 @@ public final class XmlSecTool {
             System.exit(RC_SIG);
         }
 
+        if (signature.getObjectLength() != 0) {
+            log.error("Signature contained an Object element, this is not allowed");
+            System.exit(RC_SIG);
+        }
+
+        validateSignatureReference(xmlDocument, signature);
+
         Key verificationKey = SecurityHelper.extractVerificationKey(getCredential(cli));
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBytes(verificationKey.getEncoded()));
         try {
@@ -559,6 +569,133 @@ public final class XmlSecTool {
     }
 
     /**
+     * Validates the reference within the XML signature by performing the following checks.
+     * <ul>
+     * <li>check that there is only one reference</li>
+     * <li>check that the XML signature layer resolves that reference to the same element as the DOM layer does</li>
+     * <li>check that only enveloped and, optionally, exclusive canonicalization transforms are used
+     * <li>
+     * </ul>
+     * 
+     * @param xmlDocument current XML document
+     * @param signature signature to be verified
+     */
+    protected static void validateSignatureReference(Document xmlDocument, XMLSignature signature) {
+        int numReferences = signature.getSignedInfo().getLength();
+        if (numReferences != 1) {
+            log.error("Signature SignedInfo had invalid number of References: " + numReferences);
+            System.exit(RC_SIG);
+        }
+
+        Reference ref = null;
+        try {
+            ref = signature.getSignedInfo().item(0);
+        } catch (XMLSecurityException e) {
+            log.error("Apache XML Security exception obtaining Reference", e);
+            System.exit(RC_SIG);
+        }
+        if (ref == null) {
+            log.error("Signature Reference was null");
+            System.exit(RC_SIG);
+        }
+
+        validateSignatureReferenceUri(xmlDocument, signature, ref);
+        validateSignatureTransforms(ref);
+    }
+
+    /**
+     * Validates that the element resolved by the signature validation layer's {@link IdResolver} is the same as the
+     * element resolved by the DOM layer.
+     * 
+     * @param xmlDocument the signed document
+     * @param signature the signature to be validated
+     * @param reference the reference to be validated
+     */
+    protected static void validateSignatureReferenceUri(Document xmlDocument, XMLSignature signature,
+            Reference reference) {
+        String referenceUri = reference.getURI();
+        if (!DatatypeHelper.isEmpty(referenceUri)) {
+            if (!referenceUri.startsWith("#")) {
+                log.error("Signature Reference URI was not a document fragment reference: " + referenceUri);
+                System.exit(RC_SIG);
+            }
+        }
+        referenceUri = referenceUri.substring(1);
+
+        Element expectedSignedNode = xmlDocument.getDocumentElement();
+
+        Element resolvedSignedNode = IdResolver.getElementById(xmlDocument, referenceUri);
+        if (expectedSignedNode == null) {
+            log.error("No element with DOM ID attribute #" + referenceUri
+                    + " can be resolved by XML-Security's IdResolver");
+            System.exit(RC_SIG);
+        }
+
+        if (!expectedSignedNode.isSameNode(resolvedSignedNode)) {
+            log.error("Signature Reference URI #" + referenceUri
+                    + " was resolved to a node other than the document element");
+            System.exit(RC_SIG);
+        }
+    }
+
+    /**
+     * Validate the transforms included in the Signature Reference.
+     * 
+     * The Reference may contain at most 2 transforms. One of them must be the Enveloped signature transform. An
+     * Exclusive Canonicalization transform (with or without comments) may also be present. No other transforms are
+     * allowed.
+     * 
+     * @param reference the Signature reference containing the transforms to evaluate
+     */
+    protected static void validateSignatureTransforms(Reference reference) {
+        Transforms transforms = null;
+        try {
+            transforms = reference.getTransforms();
+        } catch (XMLSecurityException e) {
+            log.error("Apache XML Security error obtaining Transforms instance", e);
+            System.exit(RC_SIG);
+        }
+
+        if (transforms == null) {
+            log.error("Error obtaining Transforms instance, null was returned");
+            System.exit(RC_SIG);
+        }
+
+        int numTransforms = transforms.getLength();
+        if (numTransforms > 2) {
+            log.error("Invalid number of Transforms was present: " + numTransforms);
+            System.exit(RC_SIG);
+        }
+
+        boolean sawEnveloped = false;
+        for (int i = 0; i < numTransforms; i++) {
+            Transform transform = null;
+            try {
+                transform = transforms.item(i);
+            } catch (TransformationException e) {
+                log.error("Error obtaining transform instance", e);
+                System.exit(RC_SIG);
+            }
+            String uri = transform.getURI();
+            if (Transforms.TRANSFORM_ENVELOPED_SIGNATURE.equals(uri)) {
+                log.debug("Saw Enveloped signature transform");
+                sawEnveloped = true;
+            } else if (Transforms.TRANSFORM_C14N_EXCL_OMIT_COMMENTS.equals(uri)
+                    || Transforms.TRANSFORM_C14N_EXCL_WITH_COMMENTS.equals(uri)) {
+                log.debug("Saw Exclusive C14N signature transform");
+            } else {
+                log.error("Saw invalid signature transform: " + uri);
+                System.exit(RC_SIG);
+            }
+        }
+
+        if (!sawEnveloped) {
+            log.error("Signature was missing the required Enveloped signature transform");
+            System.exit(RC_SIG);
+        }
+    }
+
+    /**
      * Gets the signature element from the document. The signature must be a child of the document root.
      * 
      * @param xmlDoc document from which to pull the signature
@@ -566,8 +703,11 @@ public final class XmlSecTool {
      * @return the signature element, or null
      */
     protected static Element getSignatureElement(Document xmlDoc) {
-        List<Element> sigElements = XMLHelper.getChildElementsByTagNameNS(xmlDoc.getDocumentElement(),
-                Signature.DEFAULT_ELEMENT_NAME.getNamespaceURI(), Signature.DEFAULT_ELEMENT_NAME.getLocalPart());
+        List<Element> sigElements =
+                XMLHelper
+                        .getChildElementsByTagNameNS(xmlDoc.getDocumentElement(),
+                                Signature.DEFAULT_ELEMENT_NAME.getNamespaceURI(),
+                                Signature.DEFAULT_ELEMENT_NAME.getLocalPart());
 
         if (sigElements.isEmpty()) {
             return null;
@@ -592,8 +732,9 @@ public final class XmlSecTool {
         BasicX509Credential credential = null;
         if (cli.getCertificate() != null) {
             try {
-                credential = CredentialHelper.getFileBasedCredentials(cli.getKey(), cli.getKeyPassword(),
-                        cli.getCertificate());
+                credential =
+                        CredentialHelper.getFileBasedCredentials(cli.getKey(), cli.getKeyPassword(),
+                                cli.getCertificate());
             } catch (KeyException e) {
                 log.error("Unable to read key file " + cli.getKey(), e);
                 System.exit(RC_IO);
@@ -603,8 +744,9 @@ public final class XmlSecTool {
             }
         } else if (cli.getPkcs11Config() != null) {
             try {
-                credential = CredentialHelper.getPKCS11Credential(cli.getKeystore(), cli.getPkcs11Config(),
-                        cli.getKey(), cli.getKeyPassword());
+                credential =
+                        CredentialHelper.getPKCS11Credential(cli.getKeystore(), cli.getPkcs11Config(), cli.getKey(),
+                                cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Error accessing PKCS11 store", e);
                 System.exit(RC_IO);
@@ -614,8 +756,9 @@ public final class XmlSecTool {
             }
         } else {
             try {
-                credential = CredentialHelper.getKeystoreCredential(cli.getKeystore(), cli.getKeystorePassword(),
-                        cli.getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
+                credential =
+                        CredentialHelper.getKeystoreCredential(cli.getKeystore(), cli.getKeystorePassword(),
+                                cli.getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Unable to read keystore " + cli.getKeystore(), e);
                 System.exit(RC_IO);
@@ -684,7 +827,7 @@ public final class XmlSecTool {
                 log.error("Unable to write to output file " + cli.getOutputFile());
                 System.exit(2);
             }
-            
+
             OutputStream out = new FileOutputStream(cli.getOutputFile());
             if (cli.isBase64EncodedOutput()) {
                 log.debug("Base64 encoding output to file");
@@ -698,7 +841,7 @@ public final class XmlSecTool {
                 log.debug("GZip compressing output to file");
                 out = new GZIPOutputStream(out);
             }
-            
+
             log.debug("Writting XML document to output file {}", cli.getOutputFile());
             try {
                 TransformerFactory tfac = TransformerFactory.newInstance();
