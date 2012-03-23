@@ -483,7 +483,7 @@ public class XmlSecToolCommandLineArguments {
         }
 
         if (doVerboseOutput() && doQuietOutput()) {
-            errorAndExit("Verbos and quiet output are mutually exclusive");
+            errorAndExit("Verbose and quiet output are mutually exclusive");
         }
 
     }
