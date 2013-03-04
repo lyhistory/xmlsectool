@@ -51,6 +51,9 @@ install -m644 $RPM_BUILD_DIR/%{name}-%{version}/doc/* %{buildroot}%{_docdir}/%{n
 %{_javadir}/%{name}/*
 
 %changelog
+* Mon Mar 04 2013 Ian Young <ian@iay.org.uk> 1.2.0-1
+- Import into xmlsectool package, update to latest version.
+
 * Wed Apr 06 2011 Peter Schober <peter.schober@univie.ac.at> 1.1.3-2
 - Remove version numbers from patch file and patch with -p1
 
