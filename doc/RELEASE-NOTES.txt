@@ -1,3 +1,7 @@
+Changes in Release 1.2.0
+=============================================
+[XSTJ-17] - multiple errors in --help documentation
+
 Changes in Release 1.1.4
 =============================================
 [XTSJ-10] - Correct class and command name

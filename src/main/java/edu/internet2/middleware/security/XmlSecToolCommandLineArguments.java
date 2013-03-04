@@ -494,7 +494,7 @@ public class XmlSecToolCommandLineArguments {
      * @param out location where to print the output
      */
     public void printHelp(PrintStream out) {
-        out.println("XML Tool");
+        out.println("XML Security Tool");
         out.println("Provides a command line interface for schema validating, signing, and signature validating an XML file.");
         out.println();
         out.println("==== Command Line Options ====");
@@ -504,16 +504,16 @@ public class XmlSecToolCommandLineArguments {
         out.println("Action Options - '" + SIGN_ARG.longForm() + "' and '" + V_SIG_ARG.longForm()
                 + "' are mutually exclusive.  At least one option is required.");
         out.println(String.format("  --%-20s %s", V_SCHEMA_ARG.longForm(), "Schema validate the document."));
-        out.println(String.format("  --%-20s %s", SIGN_ARG.longForm(), "Sign the SAML document."));
+        out.println(String.format("  --%-20s %s", SIGN_ARG.longForm(), "Sign the XML document."));
         out.println(String.format("  --%-20s %s", V_SIG_ARG.longForm(), "Check the signature on a signed document."));
 
         out.println();
         out.println("Data Input Options - '" + IN_FILE_ARG.longForm() + "' and '" + IN_URL_ARG.longForm()
                 + "' are mutually exclusive, one is required.");
         out.println(String.format("  --%-20s %s", IN_FILE_ARG.longForm(),
-                "Specifies the file from which the SAML document will be read."));
+                "Specifies the file from which the XML document will be read."));
         out.println(String.format("  --%-20s %s", IN_URL_ARG.longForm(),
-                "Specifies the URL from which the SAML document will be read. HTTPS certificates are not validated."));
+                "Specifies the URL from which the XML document will be read. HTTPS certificates are not validated."));
         out.println(String.format("  --%-20s %s", BASE64_IN_ARG.longForm(),
                 "Base64 decodes input.  Useful when reading in data produced with the " + BASE64_OUT_ARG.longForm()
                         + " option"));
@@ -532,7 +532,7 @@ public class XmlSecToolCommandLineArguments {
         out.println(String.format("  --%-20s %s", HTTP_PROXY_USERNAME_ARG.longForm(),
                 "Username used to authenticate to the HTTP proxy."));
         out.println(String.format("  --%-20s %s", HTTP_PROXY_PASSWORD_ARG.longForm(),
-                "Password used to authenticated to the HTTP proxy."));
+                "Password used to authenticate to the HTTP proxy."));
 
         out.println();
         out.println("Schema Validation Option - '" + SCHEMA_XSD_LANG_ARG.longForm() + "' (default) and '"
@@ -546,12 +546,12 @@ public class XmlSecToolCommandLineArguments {
 
         out.println();
         out.println("Signature Creation Options");
-        out.println(String.format("  --%-20s %s", SIG_REQUIRED_ARG.longForm(),
-                "Specifies that the document being verified is required to contain a signature."));
         out.println(String.format(
                 "  --%-20s %s",
                 SIG_REF_ID_ATT_ARG.longForm(),
-                "Specifies that the name of the attribute, on the document element, whose value is used as the URI reference of the signature"));
+                "Specifies the name of the attribute on the document element "
+                        + "whose value is used as the URI reference of the signature.  If omitted, "
+                        + "a null reference URI is used."));
         out.println(String.format("  --%-20s %s", SIG_POS_ARG.longForm(),
                 "Specifies, by 1-based index, which element to place the signature BEFORE.  "
                         + "'FIRST' may be used to indicate that the signature goes BEFORE the first element. "
@@ -570,8 +570,11 @@ public class XmlSecToolCommandLineArguments {
                 "Treat unsigned documents as an error.  (default: true)"));
 
         out.println();
-        out.println("PEM/DER Encoded Certificate/Key Options - these options are mutually exclusive with the Keystore and PKCS11 options."
-                + " Options '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm() + "' are required.");
+        out.println("PEM/DER Encoded Certificate/Key Options - "
+                + "these options are mutually exclusive with the Keystore and PKCS11 options. "
+                + "The '" + CERT_ARG.longForm() + "' option is required for signature verification. "
+                + "The '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm()
+                    + "' options are required for signing.");
         out.println(String.format("  --%-20s %s", CERT_ARG.longForm(),
                 "Specifies the file from which the signing, or validation, certificate is read."));
         out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
@@ -619,7 +622,7 @@ public class XmlSecToolCommandLineArguments {
         out.println();
         out.println("Data Output Options - Option '" + OUT_FILE_ARG.longForm() + "' is required.");
         out.println(String.format("  --%-20s %s", OUT_FILE_ARG.longForm(),
-                "Specifies the file to which the signed SAML document will be written."));
+                "Specifies the file to which the signed XML document will be written."));
         out.println(String.format("  --%-20s %s", BASE64_OUT_ARG.longForm(),
                 "Base64 encode the output. Ensures signed content isn't corrupted."));
         out.println(String.format("  --%-20s %s", DEFLATE_OUT_ARG.longForm(), "Deflate compresses the output."));
