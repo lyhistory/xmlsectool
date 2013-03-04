@@ -2,7 +2,7 @@
 %define scriptname xmltool
 Summary: Java command line tool for checking and verifying XML documents
 Name: xmlsectool
-Version: 1.1.3
+Version: 1.2.0
 Release: 2
 Epoch: 0
 License: Apache License 2.0
