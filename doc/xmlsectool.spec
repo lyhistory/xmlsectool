@@ -3,7 +3,7 @@
 Summary: Java command line tool for checking and verifying XML documents
 Name: xmlsectool
 Version: 1.2.0
-Release: 2
+Release: 1
 Epoch: 0
 License: Apache License 2.0
 Group: System Environment/Libraries
