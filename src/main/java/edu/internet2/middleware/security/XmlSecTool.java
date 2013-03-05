@@ -105,7 +105,7 @@ public final class XmlSecTool {
     /** Return code indicating input XML was not valid, {@value} . */
     public static final int RC_INVALID_XML = 4;
 
-    /** Return code indicating indicating an error validating the XML, {@value} . */
+    /** Return code indicating an error validating the XML, {@value} . */
     public static final int RC_INVALID_XS = 5;
 
     /** Return code indicating an error reading the credentials, {@value} . */
@@ -541,7 +541,7 @@ public final class XmlSecTool {
                 return;
             }
         }
-        log.debug("XML document cotnained Signature element\n{}", XMLHelper.prettyPrintXML(signatureElement));
+        log.debug("XML document contained Signature element\n{}", XMLHelper.prettyPrintXML(signatureElement));
 
         log.debug("Creating XML security library XMLSignature object");
         XMLSignature signature = null;
@@ -720,7 +720,7 @@ public final class XmlSecTool {
         }
 
         if (sigElements.size() > 1) {
-            log.error("XML document contained more than on signature, unable to process");
+            log.error("XML document contained more than one signature, unable to process");
             System.exit(RC_SIG);
         }
 
