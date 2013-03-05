@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://example.org/example"
+    targetNamespace="http://example.org/example" elementFormDefault="qualified">
+    
+    <xs:element name="DocumentElement" type="xs:decimal"/>
+
+	This text means that the schema file itself is not schema valid.    
+
+</xs:schema>

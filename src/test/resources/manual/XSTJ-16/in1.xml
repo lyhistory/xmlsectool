@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DocumentElement xmlns="http://example.org/example">
+    this string is not a decimal number
+</DocumentElement>

@@ -333,14 +333,15 @@ public final class XmlSecTool {
     }
 
     /**
-     * Validates the SAML document against the SAML 1.1 and 2.0 schema.
+     * Validates the document against the schema source indicated by the CLI arguments.
      * 
      * @param cli command line arguments
      * @param xml document to validate
      */
-    protected static void schemaValidate(XmlSecToolCommandLineArguments cli, Document xml) {
-        File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
+    protected static void schemaValidate(final XmlSecToolCommandLineArguments cli, final Document xml) {
+        Validator validator;
         try {
+            final File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
             Schema schema;
             if (cli.isXsdSchema()) {
                 log.debug("Building W3 XML Schema from file/directory '{}'", schemaFileOrDirectory.getAbsolutePath());
@@ -350,15 +351,23 @@ public final class XmlSecTool {
                 schema = SchemaBuilder.buildSchema(SchemaLanguage.RELAX, schemaFileOrDirectory);
             }
 
-            Validator validator = schema.newValidator();
+            validator = schema.newValidator();
+        } catch (SAXException e) {
+            log.error("Invalid XML schema files, unable to validate XML", e);
+            System.exit(RC_INVALID_XS);
+            // Help Java understand that validator is guaranteed to have been assigned below
+            return;
+        }
+        
+        try {
             log.debug("Schema validating XML document");
             validator.validate(new DOMSource(xml));
             log.info("XML document is schema valid");
         } catch (SAXException e) {
-            log.error("Invalid XML schema files, unable to validate XML", e);
-            System.exit(RC_INVALID_XS);
-        } catch (Exception e) {
             log.error("XML is not schema valid", e);
+            System.exit(RC_INVALID_XML);
+        } catch (IOException e) {
+            log.error("internal error: I/O exception while validating XML", e);
             System.exit(RC_INVALID_XML);
         }
     }
