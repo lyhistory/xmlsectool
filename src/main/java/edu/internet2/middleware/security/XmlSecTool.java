@@ -113,6 +113,12 @@ public final class XmlSecTool {
 
     /** Return code indicating indicating that signing or signature verification failed, {@value} . */
     public static final int RC_SIG = 7;
+    
+    /** Return code indicating that the JAVA_HOME variable is not set within the shell script, {@value} . */
+    public static final int RC_NOHOME = 8;
+    
+    /** Return code indicating that the "java" command is not executable within the shell script, {@value} . */
+    public static final int RC_NOJAVA = 9;
 
     /** Return code indicating an unknown error occurred, {@value} . */
     public static final int RC_UNKNOWN = -1;

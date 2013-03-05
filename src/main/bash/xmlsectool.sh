@@ -1,5 +1,10 @@
 #! /bin/bash
 
+#
+# See the Javadoc for the XmlSecTool main class for documentation
+# of non-zero exit codes.
+#
+
 declare LOCATION
 declare COMMAND
 declare JAVACMD
@@ -11,7 +16,7 @@ LOCATION=${LOCATION%/*}
 
 if [ -z "$JAVA_HOME" ] ; then
   echo "ERROR: JAVA_HOME environment variable is not set."
-  exit
+  exit 8
 else
   if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
     # IBM's JDK on AIX uses strange locations for the executables
@@ -24,7 +29,7 @@ fi
 if [ ! -x "$JAVACMD" ] ; then
   echo "Error: JAVA_HOME is not defined correctly."
   echo "  We cannot execute $JAVACMD"
-  exit
+  exit 9
 fi
 
 LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/classes.zip
