@@ -84,6 +84,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -479,6 +480,8 @@ public final class XmlSecTool {
             Attr referenceAttribute =
                     (Attr) rootElement.getAttributes().getNamedItem(cli.getReferenceIdAttributeName());
             if (referenceAttribute != null) {
+                // Mark the reference attribute as a valid ID attribute
+                rootElement.setIdAttributeNode(referenceAttribute, true);
                 reference = DatatypeHelper.safeTrim(referenceAttribute.getValue());
                 if (reference.length() > 0) {
                     reference = "#" + reference;
@@ -534,6 +537,65 @@ public final class XmlSecTool {
     }
 
     /**
+     * Reconcile the given reference with the document element, by making sure that
+     * the appropriate attribute is marked as an ID attribute.
+     * 
+     * @param docElement document element whose appropriate attribute should be marked
+     * @param reference reference which references the document element
+     */
+    protected static void markIdAttribute(final Element docElement, final Reference reference)
+    {
+        final String referenceUri = reference.getURI();
+        
+        /*
+         * If the reference is empty, it implicitly references the document element
+         * and no attribute is being referenced.
+         */
+        if (DatatypeHelper.isEmpty(referenceUri)) {
+            log.debug("reference was empty; no ID marking required");
+            return;
+        }
+        
+        /*
+         * If something has already identified an ID element, don't interfere
+         */
+        if (XMLHelper.getIdAttribute(docElement) != null ) {
+            log.debug("document element already has an ID attribute");
+            return;
+        }
+
+        /*
+         * The reference must be a fragment reference, from which we extract the
+         * ID value.
+         */
+        if (!referenceUri.startsWith("#")) {
+            log.error("Signature Reference URI was not a document fragment reference: " + referenceUri);
+            System.exit(RC_SIG);
+        }
+        final String id = referenceUri.substring(1);
+
+        /*
+         * Now look for the attribute which holds the ID value, and mark it as the ID attribute.
+         */
+        NamedNodeMap attributes = docElement.getAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Attr attribute = (Attr) attributes.item(i);
+            if (id.equals(attribute.getValue())) {
+                log.debug("marking ID attribute {}", attribute.getName());
+                docElement.setIdAttributeNode(attribute, true);
+                return;
+            }
+        }
+        
+        /*
+         * No attribute on the document element has the referenced ID value.
+         * Signature validation will fail later, but let's give a warning here
+         * as well to help people debug their signature code.
+         */
+        log.warn("did not find a document element attribute with value '{}'", id);
+    }
+    
+    /**
      * Verifies that the signature on a document is valid.
      * 
      * @param cli command line argument
@@ -566,7 +628,9 @@ public final class XmlSecTool {
             System.exit(RC_SIG);
         }
 
-        validateSignatureReference(xmlDocument, signature);
+        final Reference ref = extractReference(signature);
+        markIdAttribute(xmlDocument.getDocumentElement(), ref);
+        validateSignatureReference(xmlDocument, ref);
 
         Key verificationKey = SecurityHelper.extractVerificationKey(getCredential(cli));
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBytes(verificationKey.getEncoded()));
@@ -584,18 +648,13 @@ public final class XmlSecTool {
     }
 
     /**
-     * Validates the reference within the XML signature by performing the following checks.
-     * <ul>
-     * <li>check that there is only one reference</li>
-     * <li>check that the XML signature layer resolves that reference to the same element as the DOM layer does</li>
-     * <li>check that only enveloped and, optionally, exclusive canonicalization transforms are used
-     * <li>
-     * </ul>
+     * Extract the reference within the provided XML signature while ensuring that there
+     * is only one such reference.
      * 
-     * @param xmlDocument current XML document
-     * @param signature signature to be verified
+     * @param signature signature to extract the reference from
+     * @return the extracted reference
      */
-    protected static void validateSignatureReference(Document xmlDocument, XMLSignature signature) {
+    protected static Reference extractReference(final XMLSignature signature) {
         int numReferences = signature.getSignedInfo().getLength();
         if (numReferences != 1) {
             log.error("Signature SignedInfo had invalid number of References: " + numReferences);
@@ -613,8 +672,22 @@ public final class XmlSecTool {
             log.error("Signature Reference was null");
             System.exit(RC_SIG);
         }
-
-        validateSignatureReferenceUri(xmlDocument, signature, ref);
+        return ref;
+    }
+    
+    /**
+     * Validates the reference within the XML signature by performing the following checks.
+     * <ul>
+     * <li>check that there is only one reference</li>
+     * <li>check that the XML signature layer resolves that reference to the same element as the DOM layer does</li>
+     * <li>check that only enveloped and, optionally, exclusive canonicalization transforms are used</li>
+     * </ul>
+     * 
+     * @param xmlDocument current XML document
+     * @param ref reference to be verified
+     */
+    protected static void validateSignatureReference(Document xmlDocument, Reference ref) {
+        validateSignatureReferenceUri(xmlDocument, ref);
         validateSignatureTransforms(ref);
     }
 
@@ -623,24 +696,25 @@ public final class XmlSecTool {
      * element resolved by the DOM layer.
      * 
      * @param xmlDocument the signed document
-     * @param signature the signature to be validated
      * @param reference the reference to be validated
      */
-    protected static void validateSignatureReferenceUri(Document xmlDocument, XMLSignature signature,
-            Reference reference) {
+    protected static void validateSignatureReferenceUri(Document xmlDocument, Reference reference) {
         String referenceUri = reference.getURI();
         if (!DatatypeHelper.isEmpty(referenceUri)) {
             if (!referenceUri.startsWith("#")) {
                 log.error("Signature Reference URI was not a document fragment reference: " + referenceUri);
                 System.exit(RC_SIG);
             }
+        } else {
+            // reference was empty, cannot (and do not need to) verify via IdResolver
+            return;
         }
         referenceUri = referenceUri.substring(1);
 
         Element expectedSignedNode = xmlDocument.getDocumentElement();
 
         Element resolvedSignedNode = IdResolver.getElementById(xmlDocument, referenceUri);
-        if (expectedSignedNode == null) {
+        if (resolvedSignedNode == null) {
             log.error("No element with DOM ID attribute #" + referenceUri
                     + " can be resolved by XML-Security's IdResolver");
             System.exit(RC_SIG);

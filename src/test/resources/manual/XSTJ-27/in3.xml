@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" xmlns:ukfedlabel="http://ukfederation.org.uk/2006/11/label" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="uk001480" entityID="https://idp.shibboleth.net/idp/shibboleth" xsi:schemaLocation="urn:oasis:names:tc:SAML:2.0:metadata ../xml/saml-schema-metadata-2.0.xsd     urn:oasis:names:tc:SAML:metadata:algsupport ../xml/sstc-saml-metadata-algsupport-v1.0.xsd     urn:oasis:names:tc:SAML:metadata:ui ../xml/sstc-saml-metadata-ui-v1.0.xsd     urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol ../xml/sstc-saml-idp-discovery.xsd     urn:oasis:names:tc:SAML:profiles:SSO:request-init ../xml/sstc-request-initiation.xsd     urn:mace:shibboleth:metadata:1.0 ../xml/shibboleth-metadata-1.0.xsd     http://ukfederation.org.uk/2006/11/label ../xml/uk-fed-label.xsd     http://www.w3.org/2001/04/xmlenc# ../xml/xenc-schema.xsd     http://www.w3.org/2000/09/xmldsig# ../xml/xmldsig-core-schema.xsd"><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+<ds:Reference URI="#uk001480">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>jqavqiD2t/UhHDW03i8gT5iwLwI=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+UCGD1iGKEzDTf9Z4f9UL/GmKVLf99g9ujHLfAVd5QVNRBhKkeB+PGyFMjlgAPmfm2bBIJ75vydGy
+bU3AH7tHTXTRe9VCRd/0EodIPDMeu3RMBlOZXPwZz92KBa65mdrXpnxO2VxNxqlzCBPHToIW3dLW
+LuBFHvtFM/UKY9aPM/Le8PazvLKSDNTmUvNnjnLz+h45zH5jdxNJuyj6CItFBbnP2MAQ+yifbOnF
+ZFp+p9DSvC6beBE9Z6gIe+4aJ/6Qwr0rKowWh4nTDwCrJOUgHJVAFeYdsUSO//UdsycCO1NJ0P4V
+9t8AN2vOTxPOQsiF/MlrDj4eYGyFjibrLNabUQ==
+</ds:SignatureValue>
+<ds:KeyInfo>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>
+vl/xs6JdB26XVxqkHLa5wvUAPGO6eHjfnTNESzjtkVgs7ejKn9qQlURkRbG+LRNMcT6YxPAIEYMP
+QN6pZKNP+a8Jwxu0VWhaH4ftKqHkLsCh61ClIDLBM/88uymLkJ2s/AX398SYbuQDnGQ4z2NX9p/V
+MdkQVjMAXJG7o0tbm9QliRvGOLJ5Ne9NXnO685qqlCUEkKFtq+PKZlwMu8A/It5O7ZPL7NMVpwF3
+xFGP42eQ5H4v7aLSAS0efnpmnYkMxitRnsaWSJzbLheKhaMfFDpmkD9O+sIm1/fzcAVvwjEPqfJi
+ypioMfhnA6SkyK1A90BZK+JFFTSve7hSb4/txw==
+</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+<ds:X509Data>
+<ds:X509Certificate>
+MIIDqTCCApGgAwIBAgIJAPpV7XJ2ZtjrMA0GCSqGSIb3DQEBBQUAMGsxCzAJBgNVBAYTAkdCMREw
+DwYDVQQIDAhTY290bGFuZDESMBAGA1UEBwwJRWRpbmJ1cmdoMRswGQYDVQQKDBJTaGliYm9sZXRo
+IFByb2plY3QxGDAWBgNVBAMMD1JTQSBUZXN0IFNpZ25lcjAeFw0xMzAzMDIxMDExNTFaFw0xMzA0
+MDExMDExNTFaMGsxCzAJBgNVBAYTAkdCMREwDwYDVQQIDAhTY290bGFuZDESMBAGA1UEBwwJRWRp
+bmJ1cmdoMRswGQYDVQQKDBJTaGliYm9sZXRoIFByb2plY3QxGDAWBgNVBAMMD1JTQSBUZXN0IFNp
+Z25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL5f8bOiXQdul1capBy2ucL1ADxj
+unh4350zREs47ZFYLO3oyp/akJVEZEWxvi0TTHE+mMTwCBGDD0DeqWSjT/mvCcMbtFVoWh+H7Sqh
+5C7AoetQpSAywTP/PLspi5CdrPwF9/fEmG7kA5xkOM9jV/af1THZEFYzAFyRu6NLW5vUJYkbxjiy
+eTXvTV5zuvOaqpQlBJChbavjymZcDLvAPyLeTu2Ty+zTFacBd8RRj+NnkOR+L+2i0gEtHn56Zp2J
+DMYrUZ7Glkic2y4XioWjHxQ6ZpA/TvrCJtf383AFb8IxD6nyYsqYqDH4ZwOkpMitQPdAWSviRRU0
+r3u4Um+P7ccCAwEAAaNQME4wHQYDVR0OBBYEFDWL9GZAVcX2dFoOVcJ1ekzVtqrwMB8GA1UdIwQY
+MBaAFDWL9GZAVcX2dFoOVcJ1ekzVtqrwMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADggEB
+AJDDx/0vuv304GxQ+G+/99Dpjlvikqrv0EJKlsX2CISlDDrM9QDt+l1z0Fo2taYQDL3tTrFKJNbs
+tEjVKT2pFv1nJcZUS97YE3lZTzhtihvuN/dByFHRRu8zinjG8zxClmGqYypDRBmGskNEJPmQPG+I
+vAJLPNP3DZpRL32qqMtSyYQJ0LpWyGsI1SjagfiNVAv1mshCoYXp89AW0VP9fKq2EUb/AWUmTX0q
+NgS5jdaGiGs1q3LOYY1CkH3i3MbuInWOWGJNF/1GLTqhZwIewcP9pDma8l9dLKb+8snSBGS0xVoV
+pR4GkCJZt7umQWgbUHTUKy1+/JGr67aSpx6jGWI=
+</ds:X509Certificate>
+</ds:X509Data>
+</ds:KeyInfo>
+</ds:Signature>
+    <!--
+        This is a shibboleth.net Shibboleth 2 IdP for the JISC Services Management Company Ltd. 
+    -->
+    <Extensions>
+        <shibmd:Scope regexp="false">shibboleth.net</shibmd:Scope>
+        <ukfedlabel:UKFederationMember/>
+        <ukfedlabel:ExportOptIn date="2011-12-07"/>
+        <ukfedlabel:Software date="2012-12-07" fullVersion="2.3.8" name="Shibboleth" version="2"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha384"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+    </Extensions>
+    <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <Extensions>
+            <shibmd:Scope regexp="false">shibboleth.net</shibmd:Scope>
+            <mdui:UIInfo xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui">
+                <mdui:DisplayName xml:lang="en">Shibboleth.net</mdui:DisplayName>
+                <mdui:Description xml:lang="en">An identity provider hosted and used by the
+                    developers of Shibboleth.</mdui:Description>
+                <mdui:Logo height="82" width="64">https://shibboleth.net/images/gryphon_64x82.png</mdui:Logo>
+            </mdui:UIInfo>
+        </Extensions>
+        <KeyDescriptor>
+            <ds:KeyInfo>
+                <ds:X509Data>
+                    <ds:X509Certificate>
+                        MIIDNDCCAhygAwIBAgIVAKyBWnv1/h1U11C7kHvV33FIrEsJMA0GCSqGSIb3DQEB
+                        BQUAMB0xGzAZBgNVBAMTEmlkcC5zaGliYm9sZXRoLm5ldDAeFw0xMDEyMjkwMDA5
+                        MTlaFw0zMDEyMjkwMDA5MTlaMB0xGzAZBgNVBAMTEmlkcC5zaGliYm9sZXRoLm5l
+                        dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKjWAdpUx/82FUzrRMfA
+                        M63PkZZYCm3RnT3eiL+DeJcbGdcEJx/o+32vgHXJgJOBt14YdVam5GErIYgk4SGq
+                        5Z5RYl0PpQn6HQG/9prGnYCu6p5zfb0557o51Eh8TcVehS6Y2ruyCjAF0jgVMwh5
+                        /0Oh8EE9wG93pSpm70DAiiaTVCb8WoT1aZYtxbBmmuH10bU+wge/NMmaHuVAe599
+                        pyezFIL4FoI2g+1Q6nG4Yl1Z07I81tTApXKVMWRt/4/M3m2D7PUMOQ9qsxthp2L/
+                        LovIeNo0bTyeW290T2Y/JRZhKOgeDqkhuu82DPri2Vm5G/unB69KfRB7CF9QWIc3
+                        y80CAwEAAaNrMGkwSAYDVR0RBEEwP4ISaWRwLnNoaWJib2xldGgubmV0hilodHRw
+                        czovL2lkcC5zaGliYm9sZXRoLm5ldC9pZHAvc2hpYmJvbGV0aDAdBgNVHQ4EFgQU
+                        3uZ32tKXJBzPCTp2dtHSLV0FvGgwDQYJKoZIhvcNAQEFBQADggEBAAYXYuzp0UTj
+                        3yLRvUCbEtaw9b80+weOELkVv3WFY3QAG8pIKEblrMMtzrzLFWZwYwwMZDab/HnH
+                        egmgjZBthrOedEmoJ+OHRmIiS8zdZxVGEadJhTUaeIkO6kwK7Ht3nQePoiXV7TI5
+                        +A9SpmZGoukC85Za4wGDw4xWGs5t5l6tBuuV+1s0oC6T8ih5n/NyThfpbihSW0d7
+                        iBfSUickgpoM2BLM3FCnbO8HOsX1rGV4ypG9ZGDDvr2jrzalXXmc05gSlL2qd9ce
+                        Q1M+9vavusPCqlj2zZf2/HfzhyiFcb/OgA0oTFWW2ynXji6UarIV5QaPoi/XmGmx
+                        BXD36HfGBXk=
+                    </ds:X509Certificate>
+                </ds:X509Data>
+            </ds:KeyInfo>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes192-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p"/>
+        </KeyDescriptor>
+        <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://shibboleth.net/idp/profile/SAML2/POST/SSO"/>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://shibboleth.net/idp/profile/SAML2/POST-SimpleSign/SSO"/>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://shibboleth.net/idp/profile/SAML2/Redirect/SSO"/>
+    </IDPSSODescriptor>
+    <Organization>
+        <OrganizationName xml:lang="en">JISC Services Management Company Ltd</OrganizationName>
+        <OrganizationDisplayName xml:lang="en">Shibboleth.net</OrganizationDisplayName>
+        <OrganizationURL xml:lang="en">http://www.shibboleth.net/</OrganizationURL>
+    </Organization>
+    <ContactPerson contactType="support">
+        <GivenName>Shibboleth.Net Technical Support</GivenName>
+        <EmailAddress>mailto:contact@shibboleth.net</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="technical">
+        <GivenName>Scott</GivenName>
+        <SurName>Cantor</SurName>
+        <EmailAddress>mailto:cantor.2@osu.edu</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="technical">
+        <GivenName>Ian</GivenName>
+        <SurName>Young</SurName>
+        <EmailAddress>mailto:ukfed@iay.org.uk</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="administrative">
+        <GivenName>Scott</GivenName>
+        <SurName>Cantor</SurName>
+        <EmailAddress>mailto:cantor.2@osu.edu</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="administrative">
+        <GivenName>Ian</GivenName>
+        <SurName>Young</SurName>
+        <EmailAddress>mailto:ian@iay.org.uk</EmailAddress>
+    </ContactPerson>
+</EntityDescriptor>
