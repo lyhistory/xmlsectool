@@ -61,10 +61,11 @@ import org.apache.xml.security.keys.content.X509Data;
 import org.apache.xml.security.signature.Reference;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.signature.reference.ReferenceData;
+import org.apache.xml.security.signature.reference.ReferenceSubTreeData;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
-import org.apache.xml.security.utils.IdResolver;
 import org.opensaml.ws.soap.client.http.HttpClientBuilder;
 import org.opensaml.ws.soap.client.http.TLSProtocolSocketFactory;
 import org.opensaml.xml.schema.SchemaBuilder;
@@ -630,12 +631,21 @@ public final class XmlSecTool {
 
         final Reference ref = extractReference(signature);
         markIdAttribute(xmlDocument.getDocumentElement(), ref);
-        validateSignatureReference(xmlDocument, ref);
 
         Key verificationKey = SecurityHelper.extractVerificationKey(getCredential(cli));
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBytes(verificationKey.getEncoded()));
         try {
             if (signature.checkSignatureValue(verificationKey)) {
+                /*
+                 * Now that the signature has been verified, we need to check that the
+                 * XML signature layer resolved the reference to the correct element
+                 * (always the document element) and that only appropriate transforms have
+                 * been applied.
+                 * 
+                 * Note that we need to re-extract the reference from the signature at
+                 * this point, we can't use one from before the signature validation.
+                 */
+                validateSignatureReference(xmlDocument, extractReference(signature));
                 log.info("XML document signature verified.");
             } else {
                 log.error("XML document signature verification failed");
@@ -678,7 +688,6 @@ public final class XmlSecTool {
     /**
      * Validates the reference within the XML signature by performing the following checks.
      * <ul>
-     * <li>check that there is only one reference</li>
      * <li>check that the XML signature layer resolves that reference to the same element as the DOM layer does</li>
      * <li>check that only enveloped and, optionally, exclusive canonicalization transforms are used</li>
      * </ul>
@@ -692,37 +701,31 @@ public final class XmlSecTool {
     }
 
     /**
-     * Validates that the element resolved by the signature validation layer's {@link IdResolver} is the same as the
+     * Validates that the element resolved by the signature validation layer is the same as the
      * element resolved by the DOM layer.
      * 
      * @param xmlDocument the signed document
      * @param reference the reference to be validated
      */
     protected static void validateSignatureReferenceUri(Document xmlDocument, Reference reference) {
-        String referenceUri = reference.getURI();
-        if (!DatatypeHelper.isEmpty(referenceUri)) {
-            if (!referenceUri.startsWith("#")) {
-                log.error("Signature Reference URI was not a document fragment reference: " + referenceUri);
+        final ReferenceData refData = reference.getReferenceData();
+        if (refData instanceof ReferenceSubTreeData) {
+            final ReferenceSubTreeData subTree = (ReferenceSubTreeData) refData;
+            final Node root = subTree.getRoot();
+            Node resolvedSignedNode = root;
+            if (root.getNodeType() == Node.DOCUMENT_NODE) {
+                resolvedSignedNode = ((Document)root).getDocumentElement();
+            }
+
+            Element expectedSignedNode = xmlDocument.getDocumentElement();
+
+            if (!expectedSignedNode.isSameNode(resolvedSignedNode)) {
+                log.error("Signature Reference URI \"" + reference.getURI()
+                        + "\" was resolved to a node other than the document element");
                 System.exit(RC_SIG);
             }
         } else {
-            // reference was empty, cannot (and do not need to) verify via IdResolver
-            return;
-        }
-        referenceUri = referenceUri.substring(1);
-
-        Element expectedSignedNode = xmlDocument.getDocumentElement();
-
-        Element resolvedSignedNode = IdResolver.getElementById(xmlDocument, referenceUri);
-        if (resolvedSignedNode == null) {
-            log.error("No element with DOM ID attribute #" + referenceUri
-                    + " can be resolved by XML-Security's IdResolver");
-            System.exit(RC_SIG);
-        }
-
-        if (!expectedSignedNode.isSameNode(resolvedSignedNode)) {
-            log.error("Signature Reference URI #" + referenceUri
-                    + " was resolved to a node other than the document element");
+            log.error("Signature Reference URI did not resolve to a subtree");
             System.exit(RC_SIG);
         }
     }

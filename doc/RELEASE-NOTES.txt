@@ -1,6 +1,7 @@
 Changes in Release 1.2.0
 =============================================
 [XSTJ-27] - compatibility with Apache Santuario 1.5.x
+[XSTJ-24] - should not use xmlsec IdResolver class
 [XSTJ-22] - non-zero exit codes from shell script
 [XSTJ-17] - multiple errors in --help documentation
 [XSTJ-16] - misleading error message on failed schema validation
