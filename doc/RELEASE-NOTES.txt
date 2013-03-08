@@ -6,6 +6,7 @@ Changes in Release 1.2.0
 [XSTJ-17] - multiple errors in --help documentation
 [XSTJ-16] - misleading error message on failed schema validation
 [XSTJ-15] - XmlSecTool fails with String index out of range -1
+[XSTJ-14] - allow specification of Digest and Signature algorithms when signing
 
 Changes in Release 1.1.4
 =============================================

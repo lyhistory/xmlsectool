@@ -391,12 +391,38 @@ public final class XmlSecTool {
             System.exit(RC_SIG);
         }
 
+        /*
+         * Determine the signature algorithm:
+         * 
+         *    * if the CLI signatureAlgorithm has been used, it takes precedence.
+         *    * for RSA credentials, use an algorithm dependent on the digest algorithm chosen
+         *    * fall back to a signature algorithm based on the signing credential type.
+         */
         BasicX509Credential signingCredential = getCredential(cli);
-
         BasicSecurityConfiguration securityConfig = DefaultSecurityConfigurationBootstrap.buildDefaultConfig();
-        String signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
+        String signatureAlgorithm = cli.getSignatureAlgorithm();
+        if (signatureAlgorithm == null) {
+            final String credentialAlgorithm = signingCredential.getPublicKey().getAlgorithm();
+            if ("RSA".equals(credentialAlgorithm)) {
+                signatureAlgorithm = cli.getDigest().getRsaAlgorithm();
+            } else {
+                signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
+            }
+        }
         boolean hmac = SecurityHelper.isHMAC(signatureAlgorithm);
         Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
+        
+        /*
+         * Determine the digest algorithm:
+         * 
+         *    * if the CLI digestAlgorithm option has been used, it takes precedence.
+         *    * fall back to the shorthand digest choice.
+         */
+        String digestAlgorithm = cli.getDigestAlgorithm();
+        if (digestAlgorithm == null) {
+            digestAlgorithm = cli.getDigest().getDigestAlgorithm();
+        }
+        
         String c14nAlgorithm = SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS;
 
         try {
@@ -413,7 +439,7 @@ public final class XmlSecTool {
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_ENVELOPED_SIGNATURE);
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
             signature.addDocument(getSignatureReferenceUri(cli, documentRoot), contentTransforms,
-                    SignatureConstants.ALGO_ID_DIGEST_SHA1);
+                    digestAlgorithm);
 
             log.debug("Creating Signature DOM element");
             signatureElement = signature.getElement();

@@ -23,9 +23,113 @@ import jargs.gnu.CmdLineParser.OptionException;
 import java.io.PrintStream;
 import java.util.List;
 
+import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
+import org.apache.xml.security.signature.XMLSignature;
+
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
 public class XmlSecToolCommandLineArguments {
 
+    /**
+     * The digest method to use in the various signature algorithms.
+     */
+    public static enum DigestChoice {
+
+        /**
+         * SHA-1 digest.
+         */
+        SHA1("SHA-1",
+                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA1,
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1),
+        
+        /**
+         * SHA-256 digest.
+         */
+        SHA256("SHA-256",
+                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA256,
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256),
+        
+        /**
+         * SHA-384 digest.
+         */
+        SHA384("SHA-384",
+                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384,
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384),
+        
+        /**
+         * SHA-512 digest.
+         */
+        SHA512("SHA-512",
+                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512,
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512);
+        
+        /**
+         * Other name (with hyphens, etc.) used as an alternative to the enum name.
+         */
+        private final String otherName;
+        
+        /**
+         * Digest algorithm.
+         */
+        private final String digestAlgorithm;
+        
+        /**
+         * RSA signature algorithm.
+         */
+        private final String rsaAlgorithm;
+        
+        /**
+         * Constructor.
+         * 
+         * @param otherNameArg an alternative name for the enum.
+         * @param digestArg digest algorithm URI
+         * @param rsaArg RSA signature algorithm URI
+         */
+        private DigestChoice(final String otherNameArg,
+                final String digestArg, final String rsaArg) {
+            otherName = otherNameArg;
+            digestAlgorithm = digestArg;
+            rsaAlgorithm = rsaArg;
+        }
+        
+        /**
+         * Returns the digest algorithm URI for this digest choice.
+         * 
+         * @return algorithm URI
+         */
+        public String getDigestAlgorithm() {
+            return digestAlgorithm;
+        }
+        
+        /**
+         * Returns the RSA signature algorithm URI for this digest choice.
+         * 
+         * @return algorithm URI
+         */
+        public String getRsaAlgorithm() {
+            return rsaAlgorithm;
+        }
+        
+        /**
+         * Indicates whether the enum can be called by the provided name.
+         * 
+         * The name is compared ignoring case against the enum name and
+         * against the "other" name.
+         * 
+         * @param name name to check against
+         * @return <code>true</code> if and only if the enum can be called by the provided name
+         */
+        public boolean hasName(final String name) {
+            if (name.equalsIgnoreCase(name())) {
+                return true;
+            }
+            if (name.equalsIgnoreCase(otherName)) {
+                return true;
+            }
+            return false;
+        }
+
+    }
+    
     // Actions
     private boolean sign;
 
@@ -105,6 +209,43 @@ public class XmlSecToolCommandLineArguments {
     private List<String> inclusiveNamespacePrefixs;
 
     private CmdLineParser.Option SIG_INC_PREFIX_ARG;
+
+    /**
+     * Digest algorithm choice for all algorithms.
+     */
+    private DigestChoice digest;
+    
+    /**
+     * Selected digest algorithm choice name for all algorithms.
+     */
+    private String digestName;
+    
+    /**
+     * Command line option specifying the digest algorithm to be
+     * used in the various signature algorithms in a convenient
+     * short form.
+     */
+    private CmdLineParser.Option digestArg;
+    
+    /**
+     * Digest algorithm URI directly specified on the command line.
+     */
+    private String digestAlgorithm;
+    
+    /**
+     * Command line option specifying the digest algorithm URI.
+     */
+    private CmdLineParser.Option digestAlgorithmArg;
+    
+    /**
+     * Signature algorithm URI directly specified on the command line.
+     */
+    private String signatureAlgorithm;
+    
+    /**
+     * Command line option specifying the signature algorithm URI.
+     */
+    private CmdLineParser.Option signatureAlgorithmArg;
 
     private List<String> kiKeyNames;
 
@@ -206,6 +347,9 @@ public class XmlSecToolCommandLineArguments {
         SIG_REF_ID_ATT_ARG = cliParser.addStringOption("referenceIdAttributeName");
         SIG_POS_ARG = cliParser.addStringOption("signaturePosition");
         SIG_INC_PREFIX_ARG = cliParser.addStringOption("inclusiveNamespacePrefix");
+        digestArg = cliParser.addStringOption("digest");
+        digestAlgorithmArg = cliParser.addStringOption("digestAlgorithm");
+        signatureAlgorithmArg = cliParser.addStringOption("signatureAlgorithm");
         KI_KEY_NAME_ARG = cliParser.addStringOption("keyInfoKeyName");
         KI_CRL_ARG = cliParser.addStringOption("keyInfoCRL");
         OUT_FILE_ARG = cliParser.addStringOption("outFile");
@@ -248,6 +392,9 @@ public class XmlSecToolCommandLineArguments {
             refIdAttributeName = (String) cliParser.getOptionValue(SIG_REF_ID_ATT_ARG);
             signaturePosition = (String) cliParser.getOptionValue(SIG_POS_ARG);
             inclusiveNamespacePrefixs = (List<String>) cliParser.getOptionValues(SIG_INC_PREFIX_ARG);
+            digestName = (String) cliParser.getOptionValue(digestArg);
+            digestAlgorithm = (String) cliParser.getOptionValue(digestAlgorithmArg);
+            signatureAlgorithm = (String) cliParser.getOptionValue(signatureAlgorithmArg);
             kiKeyNames = (List<String>) cliParser.getOptionValues(KI_KEY_NAME_ARG);
             kiCrls = (List<String>) cliParser.getOptionValues(KI_CRL_ARG);
             outFile = (String) cliParser.getOptionValue(OUT_FILE_ARG);
@@ -320,6 +467,33 @@ public class XmlSecToolCommandLineArguments {
         return inclusiveNamespacePrefixs;
     }
 
+    /**
+     * Returns the choice of digest algorithm.
+     * 
+     * @return selected digest algorithm
+     */
+    public DigestChoice getDigest() {
+        return digest;
+    }
+    
+    /**
+     * Returns the digest algorithm URI if specified on the command line.
+     * 
+     * @return a digest algorithm identifier, or <code>null</code>.
+     */
+    public String getDigestAlgorithm() {
+        return digestAlgorithm;
+    }
+    
+    /**
+     * Returns the signature algorithm URI if specified on the command line.
+     * 
+     * @return a signature algorithm identifier, or <code>null</code>.
+     */
+    public String getSignatureAlgorithm() {
+        return signatureAlgorithm;
+    }
+    
     public List<String> getKeyInfoKeyNames() {
         return kiKeyNames;
     }
@@ -463,6 +637,19 @@ public class XmlSecToolCommandLineArguments {
 
         }
 
+        if (digestName != null) {
+            for (DigestChoice choice: DigestChoice.values()) {
+                if (choice.hasName(digestName)) {
+                    digest = choice;
+                }
+            }
+            if (digest == null) {
+                errorAndExit("digest choice \"" + digestName + "\" was not recognised");
+            }
+        } else {
+            digest = DigestChoice.SHA1;
+        }
+        
         if (doSign()) {
             if (getKey() == null) {
                 errorAndExit(KEY_ARG.longForm() + " option is required");
@@ -559,6 +746,15 @@ public class XmlSecToolCommandLineArguments {
                         + " (default value: FIRST)"));
         // out.println(String.format("  --%-20s %s", SIG_INC_PREFIX_ARG.longForm(),
         // "Specifies an inclusive namespace by prefix.  Option may be used more than once."));
+        out.println(String.format("  --%-20s %s", digestArg.longForm(),
+                "Specifies the name of the digest algorithm to use: SHA-1 (default), SHA-256, SHA-384, SHA-512."
+                        + "  For RSA credentials, dictates both the digest and signature algorithms."));
+        out.println(String.format("  --%-20s %s", digestAlgorithmArg.longForm(),
+                "Specifies the URI of the digest algorithm to use; overrides --"
+                        + digestArg.longForm() + "."));
+        out.println(String.format("  --%-20s %s", signatureAlgorithmArg.longForm(),
+                "Specifies the URI of the signature algorithm to use; overrides --"
+                        + digestArg.longForm() + "."));
         out.println(String.format("  --%-20s %s", KI_KEY_NAME_ARG.longForm(),
                 "Specifies a key name to be included in the key info.  Option may be used more than once."));
         out.println(String.format("  --%-20s %s", KI_CRL_ARG.longForm(),
