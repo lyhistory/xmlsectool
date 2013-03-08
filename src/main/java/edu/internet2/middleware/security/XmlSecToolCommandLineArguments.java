@@ -23,8 +23,8 @@ import jargs.gnu.CmdLineParser.OptionException;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
-import org.apache.xml.security.signature.XMLSignature;
+import org.opensaml.xml.encryption.EncryptionConstants;
+import org.opensaml.xml.signature.SignatureConstants;
 
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
 public class XmlSecToolCommandLineArguments {
@@ -38,29 +38,29 @@ public class XmlSecToolCommandLineArguments {
          * SHA-1 digest.
          */
         SHA1("SHA-1",
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA1,
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1),
+                SignatureConstants.ALGO_ID_DIGEST_SHA1,
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1),
         
         /**
          * SHA-256 digest.
          */
         SHA256("SHA-256",
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA256,
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256),
+                EncryptionConstants.ALGO_ID_DIGEST_SHA256,
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256),
         
         /**
          * SHA-384 digest.
          */
         SHA384("SHA-384",
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384,
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384),
+                SignatureConstants.ALGO_ID_DIGEST_SHA384,
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA384),
         
         /**
          * SHA-512 digest.
          */
         SHA512("SHA-512",
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512,
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512);
+                EncryptionConstants.ALGO_ID_DIGEST_SHA512,
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512);
         
         /**
          * Other name (with hyphens, etc.) used as an alternative to the enum name.
