@@ -403,11 +403,13 @@ public final class XmlSecTool {
         String signatureAlgorithm = cli.getSignatureAlgorithm();
         if (signatureAlgorithm == null) {
             final String credentialAlgorithm = signingCredential.getPublicKey().getAlgorithm();
+            log.debug("credential public key algorithm is {}", credentialAlgorithm);
             if ("RSA".equals(credentialAlgorithm)) {
                 signatureAlgorithm = cli.getDigest().getRsaAlgorithm();
             } else {
                 signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
             }
+            log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
         }
         boolean hmac = SecurityHelper.isHMAC(signatureAlgorithm);
         Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
