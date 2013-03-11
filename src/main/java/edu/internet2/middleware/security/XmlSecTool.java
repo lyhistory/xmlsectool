@@ -406,6 +406,8 @@ public final class XmlSecTool {
             log.debug("credential public key algorithm is {}", credentialAlgorithm);
             if ("RSA".equals(credentialAlgorithm)) {
                 signatureAlgorithm = cli.getDigest().getRsaAlgorithm();
+            } else if ("EC".equals(credentialAlgorithm)) {
+                signatureAlgorithm = cli.getDigest().getEcdsaAlgorithm();
             } else {
                 signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
             }

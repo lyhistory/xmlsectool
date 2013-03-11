@@ -39,28 +39,32 @@ public class XmlSecToolCommandLineArguments {
          */
         SHA1("SHA-1",
                 SignatureConstants.ALGO_ID_DIGEST_SHA1,
-                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1),
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1,
+                SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1),
         
         /**
          * SHA-256 digest.
          */
         SHA256("SHA-256",
                 EncryptionConstants.ALGO_ID_DIGEST_SHA256,
-                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256),
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256,
+                SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA256),
         
         /**
          * SHA-384 digest.
          */
         SHA384("SHA-384",
                 SignatureConstants.ALGO_ID_DIGEST_SHA384,
-                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA384),
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA384,
+                SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA384),
         
         /**
          * SHA-512 digest.
          */
         SHA512("SHA-512",
                 EncryptionConstants.ALGO_ID_DIGEST_SHA512,
-                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512);
+                SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512,
+                SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512);
         
         /**
          * Other name (with hyphens, etc.) used as an alternative to the enum name.
@@ -78,17 +82,24 @@ public class XmlSecToolCommandLineArguments {
         private final String rsaAlgorithm;
         
         /**
+         * ECDSA signature algorithm.
+         */
+        private final String ecdsaAlgorithm;
+        
+        /**
          * Constructor.
          * 
          * @param otherNameArg an alternative name for the enum.
          * @param digestArg digest algorithm URI
          * @param rsaArg RSA signature algorithm URI
+         * @param ecdsaArg ECDSA signature algorithm URI
          */
         private DigestChoice(final String otherNameArg,
-                final String digestArg, final String rsaArg) {
+                final String digestArg, final String rsaArg, final String ecdsaArg) {
             otherName = otherNameArg;
             digestAlgorithm = digestArg;
             rsaAlgorithm = rsaArg;
+            ecdsaAlgorithm = ecdsaArg;
         }
         
         /**
@@ -107,6 +118,15 @@ public class XmlSecToolCommandLineArguments {
          */
         public String getRsaAlgorithm() {
             return rsaAlgorithm;
+        }
+        
+        /**
+         * Returns the ECDSA signature algorithm URI for this digest choice.
+         * 
+         * @return algorithm URI
+         */
+        public String getEcdsaAlgorithm() {
+            return ecdsaAlgorithm;
         }
         
         /**
@@ -748,7 +768,7 @@ public class XmlSecToolCommandLineArguments {
         // "Specifies an inclusive namespace by prefix.  Option may be used more than once."));
         out.println(String.format("  --%-20s %s", digestArg.longForm(),
                 "Specifies the name of the digest algorithm to use: SHA-1 (default), SHA-256, SHA-384, SHA-512."
-                        + "  For RSA credentials, dictates both the digest and signature algorithms."));
+                        + "  For RSA and EC credentials, dictates both the digest and signature algorithms."));
         out.println(String.format("  --%-20s %s", digestAlgorithmArg.longForm(),
                 "Specifies the URI of the digest algorithm to use; overrides --"
                         + digestArg.longForm() + "."));
