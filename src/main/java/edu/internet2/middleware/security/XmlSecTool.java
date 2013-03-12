@@ -964,7 +964,7 @@ public final class XmlSecTool {
                 out = new GZIPOutputStream(out);
             }
 
-            log.debug("Writting XML document to output file {}", cli.getOutputFile());
+            log.debug("Writing XML document to output file {}", cli.getOutputFile());
             try {
                 TransformerFactory tfac = TransformerFactory.newInstance();
                 Transformer serializer = tfac.newTransformer();
