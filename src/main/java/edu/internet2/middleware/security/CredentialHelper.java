@@ -171,8 +171,8 @@ public class CredentialHelper {
             LOG.error("Keystore provider class does not provide a default, no-argument, constructor");
             System.exit(1);
         } catch (Exception e) {
-            LOG.error("Unable to read PKCS12 keystore", e);
-            throw new IOException("Unable to read PKCS12 keystore", e);
+            LOG.error("Unable to read PKCS11 keystore", e);
+            throw new IOException("Unable to read PKCS11 keystore", e);
         }
 
         LOG.debug("Initializing PKCS11 keystore");
