@@ -787,7 +787,7 @@ public class XmlSecToolCommandLineArguments {
 
         out.println();
         out.println("PEM/DER Encoded Certificate/Key Options - "
-                + "these options are mutually exclusive with the Keystore and PKCS11 options. "
+                + "these options are mutually exclusive with the Keystore and PKCS#11 options. "
                 + "The '" + CERT_ARG.longForm() + "' option is required for signature verification. "
                 + "The '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm()
                     + "' options are required for signing.");
@@ -799,7 +799,7 @@ public class XmlSecToolCommandLineArguments {
                 "Specifies the password for the signing key."));
 
         out.println();
-        out.println("Keystore Certificate/Key Options - these options are mutually exclusive with the PEM/DER and PKCS11 options."
+        out.println("Keystore Certificate/Key Options - these options are mutually exclusive with the PEM/DER and PKCS#11 options."
                 + " Options '"
                 + KEYSTORE_ARG.longForm()
                 + "', '"
@@ -818,22 +818,22 @@ public class XmlSecToolCommandLineArguments {
                 "Specifies the password for the signing key. Keystore password used if none is given."));
 
         out.println();
-        out.println("PKCS11 Device Certificate/Key Options - these options are mutually exclusive with the PEM/DER and Keystore options."
+        out.println("PKCS#11 Device Certificate/Key Options - these options are mutually exclusive with the PEM/DER and Keystore options."
                 + " Options '"
                 + PKCS11_CONFIG_ARG.longForm()
                 + "' and '"
                 + KEY_ARG.longForm()
                 + "' are required. Option '"
                 + KEY_PASSWORD_ARG.longForm()
-                + "' required when signing and, with some PKCS11 devices, during signature verification.");
-        out.println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG.longForm(), "The PKCS11 token configuration file."));
+                + "' required when signing and, with some PKCS#11 devices, during signature verification.");
+        out.println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG.longForm(), "The PKCS#11 token configuration file."));
         out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
                 "Specifies the key alias for the signing key is read."));
         out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(), "Specifies the pin for the signing key."));
         out.println(String.format(
                 "  --%-20s %s",
                 KEYSTORE_PROVIDER_ARG.longForm(),
-                "The fully qualified class name of the PKCS11 keystore provider implementation. (default: sun.security.pkcs11.SunPKCS11)"));
+                "The fully qualified class name of the PKCS#11 keystore provider implementation. (e.g., sun.security.pkcs11.SunPKCS11)"));
 
         out.println();
         out.println("Data Output Options - Option '" + OUT_FILE_ARG.longForm() + "' is required.");
