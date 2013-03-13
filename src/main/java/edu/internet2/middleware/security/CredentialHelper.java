@@ -168,7 +168,7 @@ public class CredentialHelper {
                     .toString());
             System.exit(1);
         } catch (NoSuchMethodException e) {
-            LOG.error("Keystore provider class does not provide a default, no-argument, constructor");
+            LOG.error("Keystore provider class does not provide a String-argument constructor");
             System.exit(1);
         } catch (Exception e) {
             LOG.error("Unable to read PKCS11 keystore", e);
