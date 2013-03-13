@@ -867,8 +867,8 @@ public final class XmlSecTool {
         } else if (cli.getPkcs11Config() != null) {
             try {
                 credential =
-                        CredentialHelper.getPKCS11Credential(cli.getKeystore(), cli.getPkcs11Config(), cli.getKey(),
-                                cli.getKeyPassword());
+                        CredentialHelper.getPKCS11Credential(cli.getKeystoreProvider(),
+                                cli.getPkcs11Config(), cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Error accessing PKCS11 store", e);
                 System.exit(RC_IO);

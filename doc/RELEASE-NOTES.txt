@@ -5,6 +5,7 @@ Changes in Release 1.2.0
 [XSTJ-24] - should not use xmlsec IdResolver class
 [XSTJ-22] - non-zero exit codes from shell script
 [XSTJ-20] - pass JVMOPTS environment variable through xmlsectool.sh
+[XSTJ-19] - pkcs11Config option fails to use indicated keystore provider
 [XSTJ-17] - multiple errors in --help documentation
 [XSTJ-16] - misleading error message on failed schema validation
 [XSTJ-15] - XmlSecTool fails with String index out of range -1
