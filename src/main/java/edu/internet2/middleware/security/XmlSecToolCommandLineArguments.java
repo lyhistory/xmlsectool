@@ -21,7 +21,11 @@ import jargs.gnu.CmdLineParser;
 import jargs.gnu.CmdLineParser.OptionException;
 
 import java.io.PrintStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.opensaml.xml.encryption.EncryptionConstants;
 import org.opensaml.xml.signature.SignatureConstants;
@@ -29,6 +33,82 @@ import org.opensaml.xml.signature.SignatureConstants;
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
 public class XmlSecToolCommandLineArguments {
 
+    /**
+     * A blacklist of digest and signature algorithms we should not accept during
+     * signature verification.
+     */
+    public class Blacklist {
+        
+        /**
+         * Ordered set of blacklisted digest algorithm URIs.
+         */
+        private final Set<String> digestBlacklist = new TreeSet<String>();
+        
+        /**
+         * Ordered set of blacklisted signature algorithm URIs.
+         */
+        private final Set<String> signatureBlacklist = new TreeSet<String>();
+        
+        /**
+         * Constructor.
+         *
+         * Initializes the blacklist with those algorithms that should be
+         * blacklisted by default.
+         */
+        protected Blacklist() {
+            digestBlacklist.add(SignatureConstants.ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5);
+            signatureBlacklist.add(SignatureConstants.ALGO_ID_SIGNATURE_NOT_RECOMMENDED_RSA_MD5);
+        }
+        
+        /**
+         * Returns <code>true</code> if the indicated algorithm URI is blacklisted for
+         * use as a digest algorithm.
+         * 
+         * @param alg digest algorithm URI to check
+         * @return <code>true</code> if the algorithm is blacklisted
+         */
+        public boolean isBlacklistedDigest(String alg) {
+            return digestBlacklist.contains(alg);
+        }
+        
+        /**
+         * Returns <code>true</code> if the indicated algorithm URI is blacklisted for
+         * use as a signature algorithm.
+         * 
+         * @param alg signature algorithm URI to check
+         * @return <code>true</code> if the algorithm is blacklisted
+         */
+        public boolean isBlacklistedSignature(String alg) {
+            return signatureBlacklist.contains(alg);
+        }
+        
+        /**
+         * Returns an unmodifiable view on the set of blacklisted digest algorithms.
+         * 
+         * @return set of blacklisted algorithms
+         */
+        public Collection<String> getDigestBlacklist() {
+            return Collections.unmodifiableCollection(digestBlacklist);
+        }
+        
+        /**
+         * Returns an unmodifiable view on the set of blacklisted signature algorithms.
+         * 
+         * @return set of blacklisted algorithms
+         */
+        public Collection<String> getSignatureBlacklist() {
+            return Collections.unmodifiableCollection(signatureBlacklist);
+        }
+        
+        /**
+         * Empties the digest and signature blacklists.
+         */
+        protected void clear() {
+            digestBlacklist.clear();
+            signatureBlacklist.clear();
+        }
+    }
+    
     /**
      * The digest method to use in the various signature algorithms.
      */
@@ -325,6 +405,37 @@ public class XmlSecToolCommandLineArguments {
 
     private CmdLineParser.Option PKCS11_CONFIG_ARG;
 
+    // Blacklisting
+    
+    /**
+     * Local blacklist of signature and digest algorithms.
+     */
+    private final Blacklist blacklist = new Blacklist();
+    
+    /**
+     * Option requesting that the signature verification
+     * blacklists be cleared.
+     */
+    private boolean clearBlacklist;
+    
+    /**
+     * Command line option requesting that the signature
+     * verification blacklists be cleared.
+     */
+    private CmdLineParser.Option clearBlacklistArg;
+    
+    /**
+     * Option requesting that the signature verification
+     * blacklists be listed.
+     */
+    private boolean listBlacklist;
+    
+    /**
+     * Command line option requesting that the signature
+     * verification blacklists be listed.
+     */
+    private CmdLineParser.Option listBlacklistArg;
+    
     // Logging
     private boolean verbose;
 
@@ -384,6 +495,8 @@ public class XmlSecToolCommandLineArguments {
         KEYSTORE_TYPE_ARG = cliParser.addStringOption("keystoreType");
         KEYSTORE_PROVIDER_ARG = cliParser.addStringOption("keystoreProvider");
         PKCS11_CONFIG_ARG = cliParser.addStringOption("pkcs11Config");
+        clearBlacklistArg = cliParser.addBooleanOption("clearBlacklist");
+        listBlacklistArg = cliParser.addBooleanOption("listBlacklist");
         VERBOSE_ARG = cliParser.addBooleanOption("verbose");
         QUIET_ARG = cliParser.addBooleanOption("quiet");
         LOG_CONFIG_ARG = cliParser.addStringOption("logConfig");
@@ -433,6 +546,8 @@ public class XmlSecToolCommandLineArguments {
             keystoreType = (String) cliParser.getOptionValue(KEYSTORE_TYPE_ARG);
             keystoreProvider = (String) cliParser.getOptionValue(KEYSTORE_PROVIDER_ARG);
             pkcs11Config = (String) cliParser.getOptionValue(PKCS11_CONFIG_ARG);
+            clearBlacklist = ((Boolean) cliParser.getOptionValue(clearBlacklistArg, Boolean.FALSE)).booleanValue();
+            listBlacklist = ((Boolean) cliParser.getOptionValue(listBlacklistArg, Boolean.FALSE)).booleanValue();
             verbose = (Boolean) cliParser.getOptionValue(VERBOSE_ARG, Boolean.FALSE);
             quiet = (Boolean) cliParser.getOptionValue(QUIET_ARG, Boolean.FALSE);
             logConfig = (String) cliParser.getOptionValue(LOG_CONFIG_ARG);
@@ -601,6 +716,33 @@ public class XmlSecToolCommandLineArguments {
     public String getPkcs11Config() {
         return pkcs11Config;
     }
+    
+    /**
+     * Returns the signature verification algorithm blacklist.
+     * 
+     * @return algorithm blacklist
+     */
+    public Blacklist getBlacklist() {
+        return blacklist;
+    }
+    
+    /**
+     * Indicates whether the option to clear the blacklist has been selected.
+     * 
+     * @return <code>true</code> if option selected
+     */
+    public boolean doClearBlacklist() {
+        return clearBlacklist;
+    }
+    
+    /**
+     * Indicates whether the option to list the blacklist has been selected.
+     * 
+     * @return <code>true</code> if option selected
+     */
+    public boolean doListBlacklist() {
+        return listBlacklist;
+    }
 
     public boolean doVerboseOutput() {
         return verbose;
@@ -623,6 +765,10 @@ public class XmlSecToolCommandLineArguments {
             return;
         }
 
+        if (doListBlacklist()) {
+            return;
+        }
+        
         if (!doSchemaValidation() && !doSignatureVerify() && !doSign()) {
             errorAndExit("No action was specified");
         }
@@ -835,6 +981,13 @@ public class XmlSecToolCommandLineArguments {
                 KEYSTORE_PROVIDER_ARG.longForm(),
                 "The fully qualified class name of the PKCS#11 keystore provider implementation. (e.g., sun.security.pkcs11.SunPKCS11)"));
 
+        out.println();
+        out.println("Signature verification algorithm blacklist options:");
+        out.println(String.format("  --%-20s %s", clearBlacklistArg.longForm(),
+                "Clear the algorithm blacklist."));
+        out.println(String.format("  --%-20s %s", listBlacklistArg.longForm(),
+                "List the contents of the algorithm blacklist."));
+        
         out.println();
         out.println("Data Output Options - Option '" + OUT_FILE_ARG.longForm() + "' is required.");
         out.println(String.format("  --%-20s %s", OUT_FILE_ARG.longForm(),

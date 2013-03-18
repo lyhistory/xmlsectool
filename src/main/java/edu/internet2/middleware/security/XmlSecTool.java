@@ -139,6 +139,31 @@ public final class XmlSecTool {
             cli.printHelp(System.out);
             System.exit(RC_OK);
         }
+        
+        if (cli.doClearBlacklist()) {
+            cli.getBlacklist().clear();
+        }
+        if (cli.doListBlacklist()) {
+            System.out.println("Digest algorithm blacklist:");
+            if (cli.getBlacklist().getDigestBlacklist().isEmpty()) {
+                System.out.println("   blacklist is empty");
+            } else {
+                for (String uri: cli.getBlacklist().getDigestBlacklist()) {
+                    System.out.println("   " + uri);
+                }
+            }
+            System.out.println();
+            System.out.println("Signature algorithm blacklist:");
+            if (cli.getBlacklist().getSignatureBlacklist().isEmpty()) {
+                System.out.println("   blacklist is empty");
+            } else {
+                for (String uri: cli.getBlacklist().getSignatureBlacklist()) {
+                    System.out.println("   " + uri);
+                }
+            }
+            System.out.println();
+            System.exit(RC_OK);
+        }
 
         initLogging(cli);
 
@@ -661,6 +686,27 @@ public final class XmlSecTool {
 
         final Reference ref = extractReference(signature);
         markIdAttribute(xmlDocument.getDocumentElement(), ref);
+        
+        // check reference digest algorithm against blacklist
+        try {
+            String alg = ref.getMessageDigestAlgorithm().getAlgorithmURI();
+            log.debug("blacklist checking digest {}", alg);
+            if (cli.getBlacklist().isBlacklistedDigest(alg)) {
+                log.error("Digest algorithm {} is blacklisted", alg);
+                System.exit(RC_SIG);
+            }
+        } catch (XMLSignatureException e) {
+            log.error("unable to retrieve signature digest algorithm", e);
+            System.exit(RC_SIG);
+        }
+        
+        // check signature algorithm against blacklist
+        String alg = signature.getSignedInfo().getSignatureMethodURI();
+        log.debug("blacklist checking signature method {}", alg);
+        if (cli.getBlacklist().isBlacklistedSignature(alg)) {
+            log.error("Signature algorithm {} is blacklisted", alg);
+            System.exit(RC_SIG);
+        }        
 
         Key verificationKey = SecurityHelper.extractVerificationKey(getCredential(cli));
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBytes(verificationKey.getEncoded()));
