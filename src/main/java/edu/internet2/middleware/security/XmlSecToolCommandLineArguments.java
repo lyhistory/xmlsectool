@@ -21,11 +21,13 @@ import jargs.gnu.CmdLineParser;
 import jargs.gnu.CmdLineParser.OptionException;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import org.opensaml.xml.encryption.EncryptionConstants;
 import org.opensaml.xml.signature.SignatureConstants;
@@ -55,9 +57,39 @@ public class XmlSecToolCommandLineArguments {
          * Initializes the blacklist with those algorithms that should be
          * blacklisted by default.
          */
-        protected Blacklist() {
-            digestBlacklist.add(SignatureConstants.ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5);
-            signatureBlacklist.add(SignatureConstants.ALGO_ID_SIGNATURE_NOT_RECOMMENDED_RSA_MD5);
+        public Blacklist() {
+            addDigestAlgorithm(SignatureConstants.ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5);
+            addSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_NOT_RECOMMENDED_RSA_MD5);
+        }
+        
+        /**
+         * Blacklist an individual digest algorithm.
+         * 
+         * @param uri algorithm URI to blacklist
+         */
+        private void addDigestAlgorithm(String uri) {
+            digestBlacklist.add(uri);
+        }
+        
+        /**
+         * Blacklist an individual signature algorithm.
+         * 
+         * @param uri algorithm URI to blacklist
+         */
+        private void addSignatureAlgorithm(String uri) {
+            signatureBlacklist.add(uri);
+        }
+        
+        /**
+         * Blacklist the digest and signature algorithms associated with
+         * a {@link DigestChoice}.
+         * 
+         * @param digestChoice {@DigestChoice} to add to blacklist
+         */
+        public void addDigest(DigestChoice digestChoice) {
+            addDigestAlgorithm(digestChoice.getDigestAlgorithm());
+            addSignatureAlgorithm(digestChoice.getRsaAlgorithm());
+            addSignatureAlgorithm(digestChoice.getEcdsaAlgorithm());
         }
         
         /**
@@ -103,7 +135,7 @@ public class XmlSecToolCommandLineArguments {
         /**
          * Empties the digest and signature blacklists.
          */
-        protected void clear() {
+        public void clear() {
             digestBlacklist.clear();
             signatureBlacklist.clear();
         }
@@ -226,6 +258,22 @@ public class XmlSecToolCommandLineArguments {
                 return true;
             }
             return false;
+        }
+
+        /**
+         * Finds the {@link DigestChoice} for a given digest name.
+         * 
+         * @param name name of the digest to be found
+         * 
+         * @return {@link DigestChoice} represented by the name
+         */
+        public static DigestChoice find(String name) {
+            for (DigestChoice choice: values()) {
+                if (choice.hasName(name)) {
+                    return choice;
+                }
+            }
+            return null;
         }
 
     }
@@ -436,6 +484,17 @@ public class XmlSecToolCommandLineArguments {
      */
     private CmdLineParser.Option listBlacklistArg;
     
+    /**
+     * Collection of digest choices to be blacklisted.
+     */
+    private final Collection<DigestChoice> blacklistDigests = new ArrayList<DigestChoice>();
+    
+    /**
+     * Command line option indicating digests to be
+     * blacklisted.
+     */
+    private CmdLineParser.Option blacklistDigestArg;
+    
     // Logging
     private boolean verbose;
 
@@ -497,6 +556,7 @@ public class XmlSecToolCommandLineArguments {
         PKCS11_CONFIG_ARG = cliParser.addStringOption("pkcs11Config");
         clearBlacklistArg = cliParser.addBooleanOption("clearBlacklist");
         listBlacklistArg = cliParser.addBooleanOption("listBlacklist");
+        blacklistDigestArg = cliParser.addStringOption("blacklistDigest");
         VERBOSE_ARG = cliParser.addBooleanOption("verbose");
         QUIET_ARG = cliParser.addBooleanOption("quiet");
         LOG_CONFIG_ARG = cliParser.addStringOption("logConfig");
@@ -548,6 +608,15 @@ public class XmlSecToolCommandLineArguments {
             pkcs11Config = (String) cliParser.getOptionValue(PKCS11_CONFIG_ARG);
             clearBlacklist = ((Boolean) cliParser.getOptionValue(clearBlacklistArg, Boolean.FALSE)).booleanValue();
             listBlacklist = ((Boolean) cliParser.getOptionValue(listBlacklistArg, Boolean.FALSE)).booleanValue();
+            Vector blacklistedDigestVector = cliParser.getOptionValues(blacklistDigestArg);
+            for (Object digestNameObject: blacklistedDigestVector) {
+                String name = (String)digestNameObject;
+                DigestChoice dig = DigestChoice.find(name);
+                if (dig == null) {
+                    errorAndExit("digest choice \"" + name + "\" was not recognised");
+                }
+                blacklistDigests.add(dig);
+            }
             verbose = (Boolean) cliParser.getOptionValue(VERBOSE_ARG, Boolean.FALSE);
             quiet = (Boolean) cliParser.getOptionValue(QUIET_ARG, Boolean.FALSE);
             logConfig = (String) cliParser.getOptionValue(LOG_CONFIG_ARG);
@@ -743,6 +812,15 @@ public class XmlSecToolCommandLineArguments {
     public boolean doListBlacklist() {
         return listBlacklist;
     }
+    
+    /**
+     * Returns the digests designated to be blacklisted on the command line.
+     * 
+     * @return collection of {@link DigestChoice}s to be blacklisted
+     */
+    public Collection<DigestChoice> getBlacklistDigests() {
+        return blacklistDigests;
+    }
 
     public boolean doVerboseOutput() {
         return verbose;
@@ -804,11 +882,7 @@ public class XmlSecToolCommandLineArguments {
         }
 
         if (digestName != null) {
-            for (DigestChoice choice: DigestChoice.values()) {
-                if (choice.hasName(digestName)) {
-                    digest = choice;
-                }
-            }
+            digest = DigestChoice.find(digestName);
             if (digest == null) {
                 errorAndExit("digest choice \"" + digestName + "\" was not recognised");
             }
@@ -985,6 +1059,8 @@ public class XmlSecToolCommandLineArguments {
         out.println("Signature verification algorithm blacklist options:");
         out.println(String.format("  --%-20s %s", clearBlacklistArg.longForm(),
                 "Clear the algorithm blacklist."));
+        out.println(String.format("  --%-20s %s", blacklistDigestArg.longForm(),
+                "Blacklist a digest by name (e.g., \"SHA-1\").  Can be used any number of times."));
         out.println(String.format("  --%-20s %s", listBlacklistArg.longForm(),
                 "List the contents of the algorithm blacklist."));
         

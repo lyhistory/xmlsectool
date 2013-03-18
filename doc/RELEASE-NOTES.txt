@@ -2,6 +2,7 @@ Changes in Release 1.2.0
 =============================================
 [XSTJ-38] - blacklist MD5 algorithm during signature verification
 [XSTJ-31] - add ECDSA elliptic curve signature support
+[XSTJ-28] - provide blacklist ability for SHA-1 during signature verification
 [XSTJ-27] - compatibility with Apache Santuario 1.5.x
 [XSTJ-24] - should not use xmlsec IdResolver class
 [XSTJ-22] - non-zero exit codes from shell script
