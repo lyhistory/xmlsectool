@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.opensaml.xml.encryption.EncryptionConstants;
 import org.opensaml.xml.signature.SignatureConstants;
 
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
@@ -158,7 +157,7 @@ public class XmlSecToolCommandLineArguments {
          * SHA-256 digest.
          */
         SHA256("SHA-256",
-                EncryptionConstants.ALGO_ID_DIGEST_SHA256,
+                SignatureConstants.ALGO_ID_DIGEST_SHA256,
                 SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256,
                 SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA256),
         
@@ -174,7 +173,7 @@ public class XmlSecToolCommandLineArguments {
          * SHA-512 digest.
          */
         SHA512("SHA-512",
-                EncryptionConstants.ALGO_ID_DIGEST_SHA512,
+                SignatureConstants.ALGO_ID_DIGEST_SHA512,
                 SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512,
                 SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512);
         
