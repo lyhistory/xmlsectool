@@ -83,7 +83,7 @@ public class XmlSecToolCommandLineArguments {
          * Blacklist the digest and signature algorithms associated with
          * a {@link DigestChoice}.
          * 
-         * @param digestChoice {@DigestChoice} to add to blacklist
+         * @param digestChoice {@link DigestChoice} to add to blacklist
          */
         public void addDigest(DigestChoice digestChoice) {
             addDigestAlgorithm(digestChoice.getDigestAlgorithm());
