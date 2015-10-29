@@ -12,7 +12,7 @@
 
     <groupId>net.shibboleth.tool</groupId>
     <artifactId>xmlsectool</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>XmlSecTool</name>
@@ -20,7 +20,7 @@
         A command line tool for checking an XML file for well-formedness and validity as well as 
         signing and checking signatures.
     </description>
-    
+
     <properties>
         <svn.relative.location>utilities/xmlsectool</svn.relative.location>
     </properties>
@@ -41,7 +41,7 @@
             </releases>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <!-- Compile dependencies -->
         <dependency>
