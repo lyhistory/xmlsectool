@@ -46,4 +46,4 @@ do
     fi
 done
 
-"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" '-Djava.endorsed.dirs='"$LIBDIR/endorsed" $JVMOPTS '-Dedu.internet2.middleware.security.XmlSecTool.home='"$LOCATION" 'edu.internet2.middleware.security.XmlSecTool' "$@"
+"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" $JVMOPTS '-Dedu.internet2.middleware.security.XmlSecTool.home='"$LOCATION" 'edu.internet2.middleware.security.XmlSecTool' "$@"
