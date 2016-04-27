@@ -886,7 +886,7 @@ public class XmlSecToolCommandLineArguments {
                 errorAndExit("digest choice \"" + digestName + "\" was not recognised");
             }
         } else {
-            digest = DigestChoice.SHA1;
+            digest = DigestChoice.SHA256;
         }
         
         if (doSign()) {
@@ -986,7 +986,7 @@ public class XmlSecToolCommandLineArguments {
         // out.println(String.format("  --%-20s %s", SIG_INC_PREFIX_ARG.longForm(),
         // "Specifies an inclusive namespace by prefix.  Option may be used more than once."));
         out.println(String.format("  --%-20s %s", digestArg.longForm(),
-                "Specifies the name of the digest algorithm to use: SHA-1 (default), SHA-256, SHA-384, SHA-512."
+                "Specifies the name of the digest algorithm to use: SHA-1, SHA-256 (default), SHA-384, SHA-512."
                         + "  For RSA and EC credentials, dictates both the digest and signature algorithms."));
         out.println(String.format("  --%-20s %s", digestAlgorithmArg.longForm(),
                 "Specifies the URI of the digest algorithm to use; overrides --"
