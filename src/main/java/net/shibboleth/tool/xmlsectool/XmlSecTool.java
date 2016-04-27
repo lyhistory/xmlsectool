@@ -132,7 +132,7 @@ public final class XmlSecTool {
      * @param args
      */
     public static void main(String[] args) {
-        XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments(args);
+        XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
         cli.parseCommandLineArguments(args);
 
         if (cli.doHelp()) {

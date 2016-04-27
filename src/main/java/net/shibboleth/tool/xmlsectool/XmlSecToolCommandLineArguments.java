@@ -514,7 +514,7 @@ public class XmlSecToolCommandLineArguments {
 
     private CmdLineParser cliParser;
 
-    public XmlSecToolCommandLineArguments(String[] args) {
+    public XmlSecToolCommandLineArguments() {
         cliParser = new CmdLineParser();
 
         SIGN_ARG = cliParser.addBooleanOption("sign");
