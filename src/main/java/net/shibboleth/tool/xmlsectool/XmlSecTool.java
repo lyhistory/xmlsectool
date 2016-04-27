@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.internet2.middleware.security;
+package net.shibboleth.tool.xmlsectool;
 
 import java.io.File;
 import java.io.FileInputStream;

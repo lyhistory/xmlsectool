@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package edu.internet2.middleware.security;
+package net.shibboleth.tool.xmlsectool;
 
 import jargs.gnu.CmdLineParser;
 import jargs.gnu.CmdLineParser.OptionException;
