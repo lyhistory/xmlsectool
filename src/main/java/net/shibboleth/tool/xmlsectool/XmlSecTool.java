@@ -143,7 +143,7 @@ public final class XmlSecTool {
         if (cli.doClearBlacklist()) {
             cli.getBlacklist().clear();
         }
-        for (XmlSecToolCommandLineArguments.DigestChoice dig: cli.getBlacklistDigests()) {
+        for (DigestChoice dig: cli.getBlacklistDigests()) {
             cli.getBlacklist().addDigest(dig);
         }
         if (cli.doListBlacklist()) {

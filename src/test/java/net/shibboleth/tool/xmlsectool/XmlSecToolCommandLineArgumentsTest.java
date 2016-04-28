@@ -4,9 +4,6 @@ import org.opensaml.xml.signature.SignatureConstants;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import net.shibboleth.tool.xmlsectool.XmlSecToolCommandLineArguments.Blacklist;
-import net.shibboleth.tool.xmlsectool.XmlSecToolCommandLineArguments.DigestChoice;
-
 public class XmlSecToolCommandLineArgumentsTest {
 
 	@Test
