@@ -65,12 +65,30 @@ public class Blacklist {
     }
     
     /**
+     * Whitelist an individual digest algorithm.
+     * 
+     * @param uri algorithm URI to whitelist
+     */
+    private void removeDigestAlgorithm(String uri) {
+        digestBlacklist.remove(uri);
+    }
+
+    /**
      * Blacklist an individual signature algorithm.
      * 
      * @param uri algorithm URI to blacklist
      */
     private void addSignatureAlgorithm(String uri) {
         signatureBlacklist.add(uri);
+    }
+    
+    /**
+     * Whitelist an individual signature algorithm.
+     * 
+     * @param uri algorithm URI to whitelist
+     */
+    private void removeSignatureAlgorithm(String uri) {
+        signatureBlacklist.remove(uri);
     }
     
     /**
@@ -83,6 +101,18 @@ public class Blacklist {
         addDigestAlgorithm(digestChoice.getDigestAlgorithm());
         addSignatureAlgorithm(digestChoice.getRsaAlgorithm());
         addSignatureAlgorithm(digestChoice.getEcdsaAlgorithm());
+    }
+    
+    /**
+     * Whitelist the digest and signature algorithms associated with
+     * a {@link DigestChoice}.
+     * 
+     * @param digestChoice {@link DigestChoice} to remove from blacklist
+     */
+    public void removeDigest(DigestChoice digestChoice) {
+        removeDigestAlgorithm(digestChoice.getDigestAlgorithm());
+        removeSignatureAlgorithm(digestChoice.getRsaAlgorithm());
+        removeSignatureAlgorithm(digestChoice.getEcdsaAlgorithm());
     }
     
     /**

@@ -73,6 +73,7 @@ public class XmlSecToolCommandLineArguments {
     private static final String PKCS11_CONFIG_ARG = "pkcs11Config";
     private static final String CLEAR_BLACKLIST_ARG = "clearBlacklist";
     private static final String BLACKLIST_DIGEST_ARG = "blacklistDigest";
+    private static final String WHITELIST_DIGEST_ARG = "whitelistDigest";
     private static final String LIST_BLACKLIST_ARG = "listBlacklist";
     private static final String OUT_FILE_ARG = "outFile";
     private static final String DEFLATE_OUT_ARG = "deflateOutput";
@@ -230,10 +231,8 @@ public class XmlSecToolCommandLineArguments {
     @Parameter(names = OPT + BLACKLIST_DIGEST_ARG)
     private List<String> blacklistDigestNames;
 
-    /**
-     * Collection of digest choices to be blacklisted.
-     */
-    private final Collection<DigestChoice> blacklistDigests = new ArrayList<DigestChoice>();
+    @Parameter(names = OPT + WHITELIST_DIGEST_ARG)
+    private List<String> whitelistDigestNames;
     
     // Logging
     @Parameter(names = OPT + VERBOSE_ARG)
@@ -258,19 +257,41 @@ public class XmlSecToolCommandLineArguments {
                 xsdSchema = true;
             }
 
-            if (blacklistDigestNames != null) {
-                for (final String name : blacklistDigestNames) {
-                    final DigestChoice dig = DigestChoice.find(name);
-                    if (dig == null) {
-                        errorAndExit("digest choice \"" + name + "\" was not recognised");
-                    }
-                    blacklistDigests.add(dig);
-                }
-            }
-
             validateCommandLineArguments();
+            processBlacklistOptions();
         } catch (ParameterException e) {
             errorAndExit(e.getMessage());
+        }
+    }
+    
+    /**
+     * Handle options related to setting up the blacklist.
+     * 
+     * These are --clearBlacklist, --blacklistDigest and --whitelistDigest.
+     */
+    private void processBlacklistOptions() {
+        if (clearBlacklist) {
+            blacklist.clear();
+        }
+
+        if (blacklistDigestNames != null) {
+            for (final String name : blacklistDigestNames) {
+                final DigestChoice dig = DigestChoice.find(name);
+                if (dig == null) {
+                    errorAndExit("digest choice \"" + name + "\" was not recognised");
+                }
+                blacklist.addDigest(dig);
+            }
+        }
+
+        if (whitelistDigestNames != null) {
+            for (final String name : whitelistDigestNames) {
+                final DigestChoice dig = DigestChoice.find(name);
+                if (dig == null) {
+                    errorAndExit("digest choice \"" + name + "\" was not recognised");
+                }
+                blacklist.removeDigest(dig);
+            }
         }
     }
 
@@ -439,15 +460,6 @@ public class XmlSecToolCommandLineArguments {
     }
     
     /**
-     * Indicates whether the option to clear the blacklist has been selected.
-     * 
-     * @return <code>true</code> if option selected
-     */
-    public boolean doClearBlacklist() {
-        return clearBlacklist;
-    }
-    
-    /**
      * Indicates whether the option to list the blacklist has been selected.
      * 
      * @return <code>true</code> if option selected
@@ -456,15 +468,6 @@ public class XmlSecToolCommandLineArguments {
         return listBlacklist;
     }
     
-    /**
-     * Returns the digests designated to be blacklisted on the command line.
-     * 
-     * @return collection of {@link DigestChoice}s to be blacklisted
-     */
-    public Collection<DigestChoice> getBlacklistDigests() {
-        return blacklistDigests;
-    }
-
     public boolean doVerboseOutput() {
         return verbose;
     }
@@ -708,6 +711,8 @@ public class XmlSecToolCommandLineArguments {
                 "Clear the algorithm blacklist."));
         out.println(String.format("  --%-20s %s", BLACKLIST_DIGEST_ARG,
                 "Blacklist a digest by name (e.g., \"SHA-1\").  Can be used any number of times."));
+        out.println(String.format("  --%-20s %s", WHITELIST_DIGEST_ARG,
+                "Whitelist a digest by name (e.g., \"SHA-1\").  Can be used any number of times."));
         out.println(String.format("  --%-20s %s", LIST_BLACKLIST_ARG,
                 "List the contents of the algorithm blacklist."));
         

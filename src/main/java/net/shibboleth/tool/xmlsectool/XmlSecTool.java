@@ -140,12 +140,6 @@ public final class XmlSecTool {
             System.exit(RC_OK);
         }
         
-        if (cli.doClearBlacklist()) {
-            cli.getBlacklist().clear();
-        }
-        for (DigestChoice dig: cli.getBlacklistDigests()) {
-            cli.getBlacklist().addDigest(dig);
-        }
         if (cli.doListBlacklist()) {
             System.out.println("Digest algorithm blacklist:");
             if (cli.getBlacklist().getDigestBlacklist().isEmpty()) {
