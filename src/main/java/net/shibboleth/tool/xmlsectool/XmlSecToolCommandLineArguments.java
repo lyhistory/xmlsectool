@@ -17,9 +17,6 @@
 
 package net.shibboleth.tool.xmlsectool;
 
-import jargs.gnu.CmdLineParser;
-import jargs.gnu.CmdLineParser.OptionException;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,9 +24,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.opensaml.xml.signature.SignatureConstants;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
 public class XmlSecToolCommandLineArguments {
@@ -277,85 +277,115 @@ public class XmlSecToolCommandLineArguments {
 
     }
     
+    /*
+     * Checkstyle: JavadocVariable OFF
+     * Checkstyle: JavadocMethod OFF
+     */
+
+    /** Prefix for all command-line option names. Separated out to make it easer to replicate the old usage text. */
+    private static final String OPT = "--";
+
+    // Command-line option names, in their order of first appearance in the usage text
+    private static final String HELP_ARG = "help";
+    private static final String SIGN_ARG = "sign";
+    private static final String V_SIG_ARG = "verifySignature";
+    private static final String V_SCHEMA_ARG = "validateSchema";
+    private static final String IN_FILE_ARG = "inFile";
+    private static final String IN_URL_ARG = "inUrl";
+    private static final String BASE64_IN_ARG = "base64DecodeInput";
+    private static final String BASE64_OUT_ARG = "base64EncodeOutput";
+    private static final String INFLATE_IN_ARG = "inflateInput";
+    private static final String GUNZIP_IN_ARG = "gunzipInput";
+    private static final String HTTP_PROXY_ARG = "httpProxy";
+    private static final String HTTP_PROXY_PORT_ARG = "httpProxyPort";
+    private static final String HTTP_PROXY_USERNAME_ARG = "httpProxyUsername";
+    private static final String HTTP_PROXY_PASSWORD_ARG = "httpProxyPassword";
+    private static final String SCHEMA_XSD_LANG_ARG = "xsd";
+    private static final String SCHEMA_RNG_LANG_ARG = "relaxng";
+    private static final String SCHEMA_DIR_ARG = "schemaDirectory";
+    private static final String SIG_REF_ID_ATT_ARG = "referenceIdAttributeName";
+    private static final String SIG_POS_ARG = "signaturePosition";
+    private static final String DIGEST_ARG = "digest";
+    private static final String DIGEST_ALGORITHM_ARG = "digestAlgorithm";
+    private static final String SIGNATURE_ALGORITHM_ARG = "signatureAlgorithm";
+    private static final String KI_KEY_NAME_ARG = "keyInfoKeyName";
+    private static final String KI_CRL_ARG = "keyInfoCRL";
+    private static final String SIG_REQUIRED_ARG = "signatureRequired";
+    private static final String CERT_ARG = "certificate";
+    private static final String KEY_ARG = "key";
+    private static final String KEY_PASSWORD_ARG = "keyPassword";
+    private static final String KEYSTORE_ARG = "keystore";
+    private static final String KEYSTORE_PASSWORD_ARG = "keystorePassword";
+    private static final String KEYSTORE_TYPE_ARG = "keystoreType";
+    private static final String KEYSTORE_PROVIDER_ARG = "keystoreProvider";
+    private static final String PKCS11_CONFIG_ARG = "pkcs11Config";
+    private static final String CLEAR_BLACKLIST_ARG = "clearBlacklist";
+    private static final String BLACKLIST_DIGEST_ARG = "blacklistDigest";
+    private static final String LIST_BLACKLIST_ARG = "listBlacklist";
+    private static final String OUT_FILE_ARG = "outFile";
+    private static final String DEFLATE_OUT_ARG = "deflateOutput";
+    private static final String GZIP_OUT_ARG = "gzipOutput";
+    private static final String VERBOSE_ARG = "verbose";
+    private static final String QUIET_ARG = "quiet";
+    private static final String LOG_CONFIG_ARG = "logConfig";
+
     // Actions
+    @Parameter(names = OPT + SIGN_ARG)
     private boolean sign;
 
-    private CmdLineParser.Option SIGN_ARG;
-
+    @Parameter(names = OPT + V_SCHEMA_ARG)
     private boolean schemaValidate;
 
-    private CmdLineParser.Option V_SCHEMA_ARG;
-
+    @Parameter(names = OPT + V_SIG_ARG)
     private boolean signatureVerify;
 
-    private CmdLineParser.Option V_SIG_ARG;
-
     // Input
+    @Parameter(names = OPT + IN_FILE_ARG)
     private String inFile;
 
-    private CmdLineParser.Option IN_FILE_ARG;
-
+    @Parameter(names = OPT + IN_URL_ARG)
     private String inUrl;
 
-    private CmdLineParser.Option IN_URL_ARG;
-
+    @Parameter(names = OPT + BASE64_IN_ARG)
     private boolean base64DecodeInput;
 
-    private CmdLineParser.Option BASE64_IN_ARG;
-
+    @Parameter(names = OPT + INFLATE_IN_ARG)
     private boolean inflateInput;
 
-    private CmdLineParser.Option INFLATE_IN_ARG;
-
+    @Parameter(names = OPT + GUNZIP_IN_ARG)
     private boolean gunzipInput;
 
-    private CmdLineParser.Option GUNZIP_IN_ARG;
-
+    @Parameter(names = OPT + HTTP_PROXY_ARG)
     private String httpProxy;
 
-    private CmdLineParser.Option HTTP_PROXY_ARG;
+    @Parameter(names = OPT + HTTP_PROXY_PORT_ARG)
+    private int httpProxyPort = 80;
 
-    private int httpProxyPort;
-
-    private CmdLineParser.Option HTTP_PROXY_PORT_ARG;
-
+    @Parameter(names = OPT + HTTP_PROXY_USERNAME_ARG)
     private String httpProxyUsername;
 
-    private CmdLineParser.Option HTTP_PROXY_USERNAME_ARG;
-
+    @Parameter(names = OPT + HTTP_PROXY_PASSWORD_ARG)
     private String httpProxyPassword;
 
-    private CmdLineParser.Option HTTP_PROXY_PASSWORD_ARG;
-
     // Schema Validation
+    @Parameter(names = OPT + SCHEMA_DIR_ARG)
     private String schemaDirectory;
 
-    private CmdLineParser.Option SCHEMA_DIR_ARG;
-
+    @Parameter(names = OPT + SCHEMA_XSD_LANG_ARG)
     private boolean xsdSchema;
 
-    private CmdLineParser.Option SCHEMA_XSD_LANG_ARG;
-
+    @Parameter(names = OPT + SCHEMA_RNG_LANG_ARG)
     private boolean rngSchema;
 
-    private CmdLineParser.Option SCHEMA_RNG_LANG_ARG;
-
     // Signature
-    private boolean signatureRequired;
+    @Parameter(names = OPT + SIG_REQUIRED_ARG)
+    private boolean signatureRequired = true;
 
-    private CmdLineParser.Option SIG_REQUIRED_ARG;
-
+    @Parameter(names = OPT + SIG_REF_ID_ATT_ARG)
     private String refIdAttributeName;
 
-    private CmdLineParser.Option SIG_REF_ID_ATT_ARG;
-
+    @Parameter(names = OPT + SIG_POS_ARG)
     private String signaturePosition;
-
-    private CmdLineParser.Option SIG_POS_ARG;
-
-    private List<String> inclusiveNamespacePrefixs;
-
-    private CmdLineParser.Option SIG_INC_PREFIX_ARG;
 
     /**
      * Digest algorithm choice for all algorithms.
@@ -365,92 +395,64 @@ public class XmlSecToolCommandLineArguments {
     /**
      * Selected digest algorithm choice name for all algorithms.
      */
+    @Parameter(names = OPT + DIGEST_ARG)
     private String digestName;
-    
-    /**
-     * Command line option specifying the digest algorithm to be
-     * used in the various signature algorithms in a convenient
-     * short form.
-     */
-    private CmdLineParser.Option digestArg;
     
     /**
      * Digest algorithm URI directly specified on the command line.
      */
+    @Parameter(names = OPT + DIGEST_ALGORITHM_ARG)
     private String digestAlgorithm;
-    
-    /**
-     * Command line option specifying the digest algorithm URI.
-     */
-    private CmdLineParser.Option digestAlgorithmArg;
     
     /**
      * Signature algorithm URI directly specified on the command line.
      */
+    @Parameter(names = OPT + SIGNATURE_ALGORITHM_ARG)
     private String signatureAlgorithm;
-    
-    /**
-     * Command line option specifying the signature algorithm URI.
-     */
-    private CmdLineParser.Option signatureAlgorithmArg;
 
+    @Parameter(names = OPT + KI_KEY_NAME_ARG)
     private List<String> kiKeyNames;
 
-    private CmdLineParser.Option KI_KEY_NAME_ARG;
-
+    @Parameter(names = OPT + KI_CRL_ARG)
     private List<String> kiCrls;
 
-    private CmdLineParser.Option KI_CRL_ARG;
-
     // Output
+    @Parameter(names = OPT + OUT_FILE_ARG)
     private String outFile;
 
-    private CmdLineParser.Option OUT_FILE_ARG;
-
+    @Parameter(names = OPT + BASE64_OUT_ARG)
     private boolean base64EncodeOutput;
 
-    private CmdLineParser.Option BASE64_OUT_ARG;
-
+    @Parameter(names = OPT + DEFLATE_OUT_ARG)
     private boolean deflateOutput;
 
-    private CmdLineParser.Option DEFLATE_OUT_ARG;
-
+    @Parameter(names = OPT + GZIP_OUT_ARG)
     private boolean gzipOutput;
 
-    private CmdLineParser.Option GZIP_OUT_ARG;
-
     // Key/Cert Data
+    @Parameter(names = OPT + CERT_ARG)
     private String cert;
 
-    private CmdLineParser.Option CERT_ARG;
-
+    @Parameter(names = OPT + KEY_ARG)
     private String key;
 
-    private CmdLineParser.Option KEY_ARG;
-
+    @Parameter(names = OPT + KEY_PASSWORD_ARG)
     private String keyPassword;
 
-    private CmdLineParser.Option KEY_PASSWORD_ARG;
-
+    @Parameter(names = OPT + KEYSTORE_ARG)
     private String keystore;
 
-    private CmdLineParser.Option KEYSTORE_ARG;
-
+    @Parameter(names = OPT + KEYSTORE_PASSWORD_ARG)
     private String keystorePassword;
 
-    private CmdLineParser.Option KEYSTORE_PASSWORD_ARG;
-
+    @Parameter(names = OPT + KEYSTORE_TYPE_ARG)
     private String keystoreType;
 
-    private CmdLineParser.Option KEYSTORE_TYPE_ARG;
-
+    @Parameter(names = OPT + KEYSTORE_PROVIDER_ARG)
     private String keystoreProvider;
 
-    private CmdLineParser.Option KEYSTORE_PROVIDER_ARG;
-
+    @Parameter(names = OPT + PKCS11_CONFIG_ARG)
     private String pkcs11Config;
-
-    private CmdLineParser.Option PKCS11_CONFIG_ARG;
 
     // Blacklisting
     
@@ -463,165 +465,59 @@ public class XmlSecToolCommandLineArguments {
      * Option requesting that the signature verification
      * blacklists be cleared.
      */
+    @Parameter(names = OPT + CLEAR_BLACKLIST_ARG)
     private boolean clearBlacklist;
-    
-    /**
-     * Command line option requesting that the signature
-     * verification blacklists be cleared.
-     */
-    private CmdLineParser.Option clearBlacklistArg;
-    
+        
     /**
      * Option requesting that the signature verification
      * blacklists be listed.
      */
+    @Parameter(names = OPT + LIST_BLACKLIST_ARG)
     private boolean listBlacklist;
-    
-    /**
-     * Command line option requesting that the signature
-     * verification blacklists be listed.
-     */
-    private CmdLineParser.Option listBlacklistArg;
-    
+
+    @Parameter(names = OPT + BLACKLIST_DIGEST_ARG)
+    private List<String> blacklistDigestNames;
+
     /**
      * Collection of digest choices to be blacklisted.
      */
     private final Collection<DigestChoice> blacklistDigests = new ArrayList<DigestChoice>();
     
-    /**
-     * Command line option indicating digests to be
-     * blacklisted.
-     */
-    private CmdLineParser.Option blacklistDigestArg;
-    
     // Logging
+    @Parameter(names = OPT + VERBOSE_ARG)
     private boolean verbose;
 
-    private CmdLineParser.Option VERBOSE_ARG;
-
+    @Parameter(names = OPT + QUIET_ARG)
     private boolean quiet;
 
-    private CmdLineParser.Option QUIET_ARG;
-
+    @Parameter(names = OPT + LOG_CONFIG_ARG)
     private String logConfig;
 
-    private CmdLineParser.Option LOG_CONFIG_ARG;
-
     // Help
+    @Parameter(names = HELP_ARG, help = true)
     private boolean help;
-
-    private CmdLineParser.Option HELP_ARG;
-
-    private CmdLineParser cliParser;
-
-    public XmlSecToolCommandLineArguments() {
-        cliParser = new CmdLineParser();
-
-        SIGN_ARG = cliParser.addBooleanOption("sign");
-        V_SCHEMA_ARG = cliParser.addBooleanOption("validateSchema");
-        V_SIG_ARG = cliParser.addBooleanOption("verifySignature");
-        IN_FILE_ARG = cliParser.addStringOption("inFile");
-        IN_URL_ARG = cliParser.addStringOption("inUrl");
-        BASE64_IN_ARG = cliParser.addBooleanOption("base64DecodeInput");
-        INFLATE_IN_ARG = cliParser.addBooleanOption("inflateInput");
-        GUNZIP_IN_ARG = cliParser.addBooleanOption("gunzipInput");
-        HTTP_PROXY_ARG = cliParser.addStringOption("httpProxy");
-        HTTP_PROXY_PORT_ARG = cliParser.addIntegerOption("httpProxyPort");
-        HTTP_PROXY_USERNAME_ARG = cliParser.addStringOption("httpProxyUsername");
-        HTTP_PROXY_PASSWORD_ARG = cliParser.addStringOption("httpProxyPassword");
-        SCHEMA_DIR_ARG = cliParser.addStringOption("schemaDirectory");
-        SCHEMA_XSD_LANG_ARG = cliParser.addBooleanOption("xsd");
-        SCHEMA_RNG_LANG_ARG = cliParser.addBooleanOption("relaxng");
-        SIG_REQUIRED_ARG = cliParser.addBooleanOption("signatureRequired");
-        SIG_REF_ID_ATT_ARG = cliParser.addStringOption("referenceIdAttributeName");
-        SIG_POS_ARG = cliParser.addStringOption("signaturePosition");
-        SIG_INC_PREFIX_ARG = cliParser.addStringOption("inclusiveNamespacePrefix");
-        digestArg = cliParser.addStringOption("digest");
-        digestAlgorithmArg = cliParser.addStringOption("digestAlgorithm");
-        signatureAlgorithmArg = cliParser.addStringOption("signatureAlgorithm");
-        KI_KEY_NAME_ARG = cliParser.addStringOption("keyInfoKeyName");
-        KI_CRL_ARG = cliParser.addStringOption("keyInfoCRL");
-        OUT_FILE_ARG = cliParser.addStringOption("outFile");
-        BASE64_OUT_ARG = cliParser.addBooleanOption("base64EncodeOutput");
-        DEFLATE_OUT_ARG = cliParser.addBooleanOption("deflateOutput");
-        GZIP_OUT_ARG = cliParser.addBooleanOption("gzipOutput");
-        CERT_ARG = cliParser.addStringOption("certificate");
-        KEY_ARG = cliParser.addStringOption("key");
-        KEY_PASSWORD_ARG = cliParser.addStringOption("keyPassword");
-        KEYSTORE_ARG = cliParser.addStringOption("keystore");
-        KEYSTORE_PASSWORD_ARG = cliParser.addStringOption("keystorePassword");
-        KEYSTORE_TYPE_ARG = cliParser.addStringOption("keystoreType");
-        KEYSTORE_PROVIDER_ARG = cliParser.addStringOption("keystoreProvider");
-        PKCS11_CONFIG_ARG = cliParser.addStringOption("pkcs11Config");
-        clearBlacklistArg = cliParser.addBooleanOption("clearBlacklist");
-        listBlacklistArg = cliParser.addBooleanOption("listBlacklist");
-        blacklistDigestArg = cliParser.addStringOption("blacklistDigest");
-        VERBOSE_ARG = cliParser.addBooleanOption("verbose");
-        QUIET_ARG = cliParser.addBooleanOption("quiet");
-        LOG_CONFIG_ARG = cliParser.addStringOption("logConfig");
-        HELP_ARG = cliParser.addBooleanOption("help");
-    }
 
     public void parseCommandLineArguments(String[] args) {
         try {
-            cliParser.parse(args);
+            final JCommander jc = new JCommander(this);
+            jc.parse(args);
 
-            sign = (Boolean) cliParser.getOptionValue(SIGN_ARG, Boolean.FALSE);
-            schemaValidate = (Boolean) cliParser.getOptionValue(V_SCHEMA_ARG, Boolean.FALSE);
-            signatureVerify = (Boolean) cliParser.getOptionValue(V_SIG_ARG, Boolean.FALSE);
-            inFile = (String) cliParser.getOptionValue(IN_FILE_ARG);
-            inUrl = (String) cliParser.getOptionValue(IN_URL_ARG);
-            base64DecodeInput = ((Boolean) cliParser.getOptionValue(BASE64_IN_ARG, Boolean.FALSE)).booleanValue();
-            inflateInput = ((Boolean) cliParser.getOptionValue(INFLATE_IN_ARG, Boolean.FALSE)).booleanValue();
-            gunzipInput = ((Boolean) cliParser.getOptionValue(GUNZIP_IN_ARG, Boolean.FALSE)).booleanValue();
-            schemaDirectory = (String) cliParser.getOptionValue(SCHEMA_DIR_ARG);
-            xsdSchema = (Boolean) cliParser.getOptionValue(SCHEMA_XSD_LANG_ARG, Boolean.FALSE);
-            rngSchema = (Boolean) cliParser.getOptionValue(SCHEMA_RNG_LANG_ARG, Boolean.FALSE);
             if (!xsdSchema && !rngSchema) {
                 xsdSchema = true;
             }
-            signatureRequired = (Boolean) cliParser.getOptionValue(SIG_REQUIRED_ARG, Boolean.TRUE);
-            refIdAttributeName = (String) cliParser.getOptionValue(SIG_REF_ID_ATT_ARG);
-            signaturePosition = (String) cliParser.getOptionValue(SIG_POS_ARG);
-            inclusiveNamespacePrefixs = (List<String>) cliParser.getOptionValues(SIG_INC_PREFIX_ARG);
-            digestName = (String) cliParser.getOptionValue(digestArg);
-            digestAlgorithm = (String) cliParser.getOptionValue(digestAlgorithmArg);
-            signatureAlgorithm = (String) cliParser.getOptionValue(signatureAlgorithmArg);
-            kiKeyNames = (List<String>) cliParser.getOptionValues(KI_KEY_NAME_ARG);
-            kiCrls = (List<String>) cliParser.getOptionValues(KI_CRL_ARG);
-            outFile = (String) cliParser.getOptionValue(OUT_FILE_ARG);
-            base64EncodeOutput = (Boolean) cliParser.getOptionValue(BASE64_OUT_ARG, Boolean.FALSE);
-            deflateOutput = ((Boolean) cliParser.getOptionValue(DEFLATE_OUT_ARG, Boolean.FALSE)).booleanValue();
-            gzipOutput = ((Boolean) cliParser.getOptionValue(GZIP_OUT_ARG, Boolean.FALSE)).booleanValue();
-            httpProxy = (String) cliParser.getOptionValue(HTTP_PROXY_ARG);
-            httpProxyPort = (Integer) cliParser.getOptionValue(HTTP_PROXY_PORT_ARG, 80);
-            httpProxyUsername = (String) cliParser.getOptionValue(HTTP_PROXY_USERNAME_ARG);
-            httpProxyPassword = (String) cliParser.getOptionValue(HTTP_PROXY_PASSWORD_ARG);
-            cert = (String) cliParser.getOptionValue(CERT_ARG);
-            key = (String) cliParser.getOptionValue(KEY_ARG);
-            keyPassword = (String) cliParser.getOptionValue(KEY_PASSWORD_ARG);
-            keystore = (String) cliParser.getOptionValue(KEYSTORE_ARG);
-            keystorePassword = (String) cliParser.getOptionValue(KEYSTORE_PASSWORD_ARG);
-            keystoreType = (String) cliParser.getOptionValue(KEYSTORE_TYPE_ARG);
-            keystoreProvider = (String) cliParser.getOptionValue(KEYSTORE_PROVIDER_ARG);
-            pkcs11Config = (String) cliParser.getOptionValue(PKCS11_CONFIG_ARG);
-            clearBlacklist = ((Boolean) cliParser.getOptionValue(clearBlacklistArg, Boolean.FALSE)).booleanValue();
-            listBlacklist = ((Boolean) cliParser.getOptionValue(listBlacklistArg, Boolean.FALSE)).booleanValue();
-            Vector blacklistedDigestVector = cliParser.getOptionValues(blacklistDigestArg);
-            for (Object digestNameObject: blacklistedDigestVector) {
-                String name = (String)digestNameObject;
-                DigestChoice dig = DigestChoice.find(name);
-                if (dig == null) {
-                    errorAndExit("digest choice \"" + name + "\" was not recognised");
+
+            if (blacklistDigestNames != null) {
+                for (final String name : blacklistDigestNames) {
+                    final DigestChoice dig = DigestChoice.find(name);
+                    if (dig == null) {
+                        errorAndExit("digest choice \"" + name + "\" was not recognised");
+                    }
+                    blacklistDigests.add(dig);
                 }
-                blacklistDigests.add(dig);
             }
-            verbose = (Boolean) cliParser.getOptionValue(VERBOSE_ARG, Boolean.FALSE);
-            quiet = (Boolean) cliParser.getOptionValue(QUIET_ARG, Boolean.FALSE);
-            logConfig = (String) cliParser.getOptionValue(LOG_CONFIG_ARG);
-            help = (Boolean) cliParser.getOptionValue(HELP_ARG, false);
+
             validateCommandLineArguments();
-        } catch (OptionException e) {
+        } catch (ParameterException e) {
             errorAndExit(e.getMessage());
         }
     }
@@ -664,10 +560,6 @@ public class XmlSecToolCommandLineArguments {
 
     public String getSignaturePosition() {
         return signaturePosition;
-    }
-
-    public List<String> getInclusiveNamespacePrefixs() {
-        return inclusiveNamespacePrefixs;
     }
 
     /**
@@ -855,13 +747,13 @@ public class XmlSecToolCommandLineArguments {
         }
 
         if (isInflateInput() && isGunzipInput()) {
-            errorAndExit((new StringBuilder("Options ")).append(INFLATE_IN_ARG.longForm()).append(" and ")
-                    .append(GUNZIP_IN_ARG.longForm()).append(" are mutually exclusive").toString());
+            errorAndExit((new StringBuilder("Options ")).append(INFLATE_IN_ARG).append(" and ")
+                    .append(GUNZIP_IN_ARG).append(" are mutually exclusive").toString());
         }
 
         if (doSchemaValidation()) {
             if (getSchemaDirectory() == null) {
-                errorAndExit(SCHEMA_DIR_ARG.longForm() + " option is required");
+                errorAndExit(SCHEMA_DIR_ARG + " option is required");
             }
 
             if (isXsdSchema() && isRngSchema()) {
@@ -891,11 +783,11 @@ public class XmlSecToolCommandLineArguments {
         
         if (doSign()) {
             if (getKey() == null) {
-                errorAndExit(KEY_ARG.longForm() + " option is required");
+                errorAndExit(KEY_ARG + " option is required");
             }
 
             if ((getKeystore() != null || getPkcs11Config() != null) && getKeyPassword() == null) {
-                errorAndExit(KEY_PASSWORD_ARG.longForm() + " option is required");
+                errorAndExit(KEY_PASSWORD_ARG + " option is required");
             }
 
             if (getOutputFile() == null) {
@@ -904,8 +796,8 @@ public class XmlSecToolCommandLineArguments {
         }
 
         if (isDeflateOutput() && isGzipOutput()) {
-            errorAndExit((new StringBuilder("Options ")).append(DEFLATE_OUT_ARG.longForm()).append(" and ")
-                    .append(GZIP_OUT_ARG.longForm()).append(" are mutually exclusive").toString());
+            errorAndExit((new StringBuilder("Options ")).append(DEFLATE_OUT_ARG).append(" and ")
+                    .append(GZIP_OUT_ARG).append(" are mutually exclusive").toString());
         }
 
         if (doVerboseOutput() && doQuietOutput()) {
@@ -919,168 +811,174 @@ public class XmlSecToolCommandLineArguments {
      * 
      * @param out location where to print the output
      */
+    // Checkstyle: MethodLength OFF
     public void printHelp(PrintStream out) {
         out.println("XML Security Tool");
-        out.println("Provides a command line interface for schema validating, signing, and signature validating an XML file.");
+        out.println("Provides a command line interface for schema validating, signing, " +
+                "and signature validating an XML file.");
         out.println();
         out.println("==== Command Line Options ====");
         out.println();
-        out.println(String.format("  --%-20s %s", HELP_ARG.longForm(), "Prints this help information"));
+        out.println(String.format("  --%-20s %s", HELP_ARG, "Prints this help information"));
         out.println();
-        out.println("Action Options - '" + SIGN_ARG.longForm() + "' and '" + V_SIG_ARG.longForm()
+        out.println("Action Options - '" + SIGN_ARG + "' and '" + V_SIG_ARG
                 + "' are mutually exclusive.  At least one option is required.");
-        out.println(String.format("  --%-20s %s", V_SCHEMA_ARG.longForm(), "Schema validate the document."));
-        out.println(String.format("  --%-20s %s", SIGN_ARG.longForm(), "Sign the XML document."));
-        out.println(String.format("  --%-20s %s", V_SIG_ARG.longForm(), "Check the signature on a signed document."));
+        out.println(String.format("  --%-20s %s", V_SCHEMA_ARG, "Schema validate the document."));
+        out.println(String.format("  --%-20s %s", SIGN_ARG, "Sign the XML document."));
+        out.println(String.format("  --%-20s %s", V_SIG_ARG, "Check the signature on a signed document."));
 
         out.println();
-        out.println("Data Input Options - '" + IN_FILE_ARG.longForm() + "' and '" + IN_URL_ARG.longForm()
+        out.println("Data Input Options - '" + IN_FILE_ARG + "' and '" + IN_URL_ARG
                 + "' are mutually exclusive, one is required.");
-        out.println(String.format("  --%-20s %s", IN_FILE_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", IN_FILE_ARG,
                 "Specifies the file from which the XML document will be read."));
-        out.println(String.format("  --%-20s %s", IN_URL_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", IN_URL_ARG,
                 "Specifies the URL from which the XML document will be read. HTTPS certificates are not validated."));
-        out.println(String.format("  --%-20s %s", BASE64_IN_ARG.longForm(),
-                "Base64 decodes input.  Useful when reading in data produced with the " + BASE64_OUT_ARG.longForm()
+        out.println(String.format("  --%-20s %s", BASE64_IN_ARG,
+                "Base64 decodes input.  Useful when reading in data produced with the " + BASE64_OUT_ARG
                         + " option"));
-        out.println(String.format("  --%-20s %s", INFLATE_IN_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", INFLATE_IN_ARG,
                 "Inflates a file created with the \"deflate\" compression algorithm.  This property is ignored if "
-                        + IN_URL_ARG.longForm()
+                        + IN_URL_ARG
                         + " is used.  Instead the returned headers determine if content was deflated"));
-        out.println(String.format("  --%-20s %s", GUNZIP_IN_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", GUNZIP_IN_ARG,
                 "Inflates a file created with the \"gzip\" compression algorithm.  This property is ignored if "
-                        + IN_URL_ARG.longForm()
+                        + IN_URL_ARG
                         + " is used.  Instead the returned headers determine if content was gzip'ed"));
 
-        out.println(String.format("  --%-20s %s", HTTP_PROXY_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", HTTP_PROXY_ARG,
                 "HTTP proxy address used when fetching URL-based input files."));
-        out.println(String.format("  --%-20s %s", HTTP_PROXY_PORT_ARG.longForm(), "HTTP proxy port. (default: 80)"));
-        out.println(String.format("  --%-20s %s", HTTP_PROXY_USERNAME_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", HTTP_PROXY_PORT_ARG, "HTTP proxy port. (default: 80)"));
+        out.println(String.format("  --%-20s %s", HTTP_PROXY_USERNAME_ARG,
                 "Username used to authenticate to the HTTP proxy."));
-        out.println(String.format("  --%-20s %s", HTTP_PROXY_PASSWORD_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", HTTP_PROXY_PASSWORD_ARG,
                 "Password used to authenticate to the HTTP proxy."));
 
         out.println();
-        out.println("Schema Validation Option - '" + SCHEMA_XSD_LANG_ARG.longForm() + "' (default) and '"
-                + SCHEMA_RNG_LANG_ARG.longForm() + "' are mutually exclusive option.");
-        out.println(String.format("  --%-20s %s", SCHEMA_DIR_ARG.longForm(),
+        out.println("Schema Validation Option - '" + SCHEMA_XSD_LANG_ARG + "' (default) and '"
+                + SCHEMA_RNG_LANG_ARG + "' are mutually exclusive option.");
+        out.println(String.format("  --%-20s %s", SCHEMA_DIR_ARG,
                 "Specifies a schema file or directory of schema files.  Subdirectories are also read."));
-        out.println(String.format("  --%-20s %s", SCHEMA_XSD_LANG_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", SCHEMA_XSD_LANG_ARG,
                 "Indicates schema files are W3 XML Schema 1.0 files (.xsd)."));
-        out.println(String.format("  --%-20s %s", SCHEMA_RNG_LANG_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", SCHEMA_RNG_LANG_ARG,
                 "Indicates schema files are OASIS RELAX NG files (.rng)."));
 
         out.println();
         out.println("Signature Creation Options");
         out.println(String.format(
                 "  --%-20s %s",
-                SIG_REF_ID_ATT_ARG.longForm(),
+                SIG_REF_ID_ATT_ARG,
                 "Specifies the name of the attribute on the document element "
                         + "whose value is used as the URI reference of the signature.  If omitted, "
                         + "a null reference URI is used."));
-        out.println(String.format("  --%-20s %s", SIG_POS_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", SIG_POS_ARG,
                 "Specifies, by 1-based index, which element to place the signature BEFORE.  "
                         + "'FIRST' may be used to indicate that the signature goes BEFORE the first element. "
                         + "'LAST' may be used to indicate that the signature goes AFTER the last element."
                         + " (default value: FIRST)"));
-        // out.println(String.format("  --%-20s %s", SIG_INC_PREFIX_ARG.longForm(),
-        // "Specifies an inclusive namespace by prefix.  Option may be used more than once."));
-        out.println(String.format("  --%-20s %s", digestArg.longForm(),
+        out.println(String.format("  --%-20s %s", DIGEST_ARG,
                 "Specifies the name of the digest algorithm to use: SHA-1, SHA-256 (default), SHA-384, SHA-512."
                         + "  For RSA and EC credentials, dictates both the digest and signature algorithms."));
-        out.println(String.format("  --%-20s %s", digestAlgorithmArg.longForm(),
+        out.println(String.format("  --%-20s %s", DIGEST_ALGORITHM_ARG,
                 "Specifies the URI of the digest algorithm to use; overrides --"
-                        + digestArg.longForm() + "."));
-        out.println(String.format("  --%-20s %s", signatureAlgorithmArg.longForm(),
+                        + DIGEST_ARG + "."));
+        out.println(String.format("  --%-20s %s", SIGNATURE_ALGORITHM_ARG,
                 "Specifies the URI of the signature algorithm to use; overrides --"
-                        + digestArg.longForm() + "."));
-        out.println(String.format("  --%-20s %s", KI_KEY_NAME_ARG.longForm(),
+                        + DIGEST_ARG + "."));
+        out.println(String.format("  --%-20s %s", KI_KEY_NAME_ARG,
                 "Specifies a key name to be included in the key info.  Option may be used more than once."));
-        out.println(String.format("  --%-20s %s", KI_CRL_ARG.longForm(),
-                "Specifies a file path for a CRL to be included in the key info.  Option may be used more than once."));
+        out.println(String.format("  --%-20s %s", KI_CRL_ARG,
+                "Specifies a file path for a CRL to be included in the key info.  "
+                        + "Option may be used more than once."));
 
         out.println();
         out.println("Signature Verification Options");
-        out.println(String.format("  --%-20s %s", SIG_REQUIRED_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", SIG_REQUIRED_ARG,
                 "Treat unsigned documents as an error.  (default: true)"));
 
         out.println();
         out.println("PEM/DER Encoded Certificate/Key Options - "
                 + "these options are mutually exclusive with the Keystore and PKCS#11 options. "
-                + "The '" + CERT_ARG.longForm() + "' option is required for signature verification. "
-                + "The '" + CERT_ARG.longForm() + "' and '" + KEY_ARG.longForm()
+                + "The '" + CERT_ARG + "' option is required for signature verification. "
+                + "The '" + CERT_ARG + "' and '" + KEY_ARG
                     + "' options are required for signing.");
-        out.println(String.format("  --%-20s %s", CERT_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", CERT_ARG,
                 "Specifies the file from which the signing, or validation, certificate is read."));
-        out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", KEY_ARG,
                 "Specifies the file from which the signing key is read."));
-        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG,
                 "Specifies the password for the signing key."));
 
         out.println();
-        out.println("Keystore Certificate/Key Options - these options are mutually exclusive with the PEM/DER and PKCS#11 options."
+        out.println("Keystore Certificate/Key Options - "
+                + "these options are mutually exclusive with the PEM/DER and PKCS#11 options."
                 + " Options '"
-                + KEYSTORE_ARG.longForm()
+                + KEYSTORE_ARG
                 + "', '"
-                + KEY_ARG.longForm()
+                + KEY_ARG
                 + "', and '"
-                + KEY_PASSWORD_ARG.longForm() + "' are required.");
-        out.println(String.format("  --%-20s %s", KEYSTORE_ARG.longForm(), "Specifies the keystore file."));
-        out.println(String.format("  --%-20s %s", KEYSTORE_PASSWORD_ARG.longForm(),
+                + KEY_PASSWORD_ARG + "' are required.");
+        out.println(String.format("  --%-20s %s", KEYSTORE_ARG, "Specifies the keystore file."));
+        out.println(String.format("  --%-20s %s", KEYSTORE_PASSWORD_ARG,
                 "Specifies the password for the keystore. If not provided then the key password is used."));
-        out.println(String.format("  --%-20s %s", KEYSTORE_TYPE_ARG.longForm(), "Specifies the type of the keystore."));
-        out.println(String.format("  --%-20s %s", KEYSTORE_PROVIDER_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", KEYSTORE_TYPE_ARG, "Specifies the type of the keystore."));
+        out.println(String.format("  --%-20s %s", KEYSTORE_PROVIDER_ARG,
                 "Specifies the keystore provider class to use instead of the default one for the JVM."));
-        out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", KEY_ARG,
                 "Specifies the key alias for the signing key is read."));
-        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG,
                 "Specifies the password for the signing key. Keystore password used if none is given."));
 
         out.println();
-        out.println("PKCS#11 Device Certificate/Key Options - these options are mutually exclusive with the PEM/DER and Keystore options."
+        out.println("PKCS#11 Device Certificate/Key Options - "
+                + "these options are mutually exclusive with the PEM/DER and Keystore options."
                 + " Options '"
-                + PKCS11_CONFIG_ARG.longForm()
+                + PKCS11_CONFIG_ARG
                 + "' and '"
-                + KEY_ARG.longForm()
+                + KEY_ARG
                 + "' are required. Option '"
-                + KEY_PASSWORD_ARG.longForm()
+                + KEY_PASSWORD_ARG
                 + "' required when signing and, with some PKCS#11 devices, during signature verification.");
-        out.println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG.longForm(), "The PKCS#11 token configuration file."));
-        out.println(String.format("  --%-20s %s", KEY_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", PKCS11_CONFIG_ARG, "The PKCS#11 token configuration file."));
+        out.println(String.format("  --%-20s %s", KEY_ARG,
                 "Specifies the key alias for the signing key is read."));
-        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG.longForm(), "Specifies the pin for the signing key."));
+        out.println(String.format("  --%-20s %s", KEY_PASSWORD_ARG, "Specifies the pin for the signing key."));
         out.println(String.format(
                 "  --%-20s %s",
-                KEYSTORE_PROVIDER_ARG.longForm(),
-                "The fully qualified class name of the PKCS#11 keystore provider implementation. (e.g., sun.security.pkcs11.SunPKCS11)"));
+                KEYSTORE_PROVIDER_ARG,
+                "The fully qualified class name of the PKCS#11 keystore provider implementation. "
+                + "(e.g., sun.security.pkcs11.SunPKCS11)"));
 
         out.println();
         out.println("Signature verification algorithm blacklist options:");
-        out.println(String.format("  --%-20s %s", clearBlacklistArg.longForm(),
+        out.println(String.format("  --%-20s %s", CLEAR_BLACKLIST_ARG,
                 "Clear the algorithm blacklist."));
-        out.println(String.format("  --%-20s %s", blacklistDigestArg.longForm(),
+        out.println(String.format("  --%-20s %s", BLACKLIST_DIGEST_ARG,
                 "Blacklist a digest by name (e.g., \"SHA-1\").  Can be used any number of times."));
-        out.println(String.format("  --%-20s %s", listBlacklistArg.longForm(),
+        out.println(String.format("  --%-20s %s", LIST_BLACKLIST_ARG,
                 "List the contents of the algorithm blacklist."));
         
         out.println();
-        out.println("Data Output Options - Option '" + OUT_FILE_ARG.longForm() + "' is required.");
-        out.println(String.format("  --%-20s %s", OUT_FILE_ARG.longForm(),
+        out.println("Data Output Options - Option '" + OUT_FILE_ARG + "' is required.");
+        out.println(String.format("  --%-20s %s", OUT_FILE_ARG,
                 "Specifies the file to which the signed XML document will be written."));
-        out.println(String.format("  --%-20s %s", BASE64_OUT_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", BASE64_OUT_ARG,
                 "Base64 encode the output. Ensures signed content isn't corrupted."));
-        out.println(String.format("  --%-20s %s", DEFLATE_OUT_ARG.longForm(), "Deflate compresses the output."));
-        out.println(String.format("  --%-20s %s", GZIP_OUT_ARG.longForm(), "GZip compresses the output."));
+        out.println(String.format("  --%-20s %s", DEFLATE_OUT_ARG, "Deflate compresses the output."));
+        out.println(String.format("  --%-20s %s", GZIP_OUT_ARG, "GZip compresses the output."));
 
         out.println();
         out.println("Logging Options - these options are mutually exclusive");
-        out.println(String.format("  --%-20s %s", VERBOSE_ARG.longForm(), "Turn on verbose messages."));
-        out.println(String.format("  --%-20s %s", QUIET_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", VERBOSE_ARG, "Turn on verbose messages."));
+        out.println(String.format("  --%-20s %s", QUIET_ARG,
                 "Do not write any messages to STDERR or STDOUT."));
-        out.println(String.format("  --%-20s %s", LOG_CONFIG_ARG.longForm(),
+        out.println(String.format("  --%-20s %s", LOG_CONFIG_ARG,
                 "Specifies a logback configuration file to use to configure logging."));
         out.println();
     }
+
+    // Checkstyle: MethodLength ON
 
     /**
      * Prints the error message to STDERR and then exits.

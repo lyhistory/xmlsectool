@@ -74,8 +74,8 @@
             <version>1.1.0</version>
         </dependency>
         <dependency>
-            <groupId>jargs</groupId>
-            <artifactId>jargs</artifactId>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-httpclient</groupId>
