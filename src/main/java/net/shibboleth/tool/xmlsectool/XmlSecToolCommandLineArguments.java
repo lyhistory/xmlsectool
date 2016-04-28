@@ -57,8 +57,12 @@ public class XmlSecToolCommandLineArguments {
          * blacklisted by default.
          */
         public Blacklist() {
+            // MD5
             addDigestAlgorithm(SignatureConstants.ALGO_ID_DIGEST_NOT_RECOMMENDED_MD5);
             addSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_NOT_RECOMMENDED_RSA_MD5);
+            
+            // SHA-1
+            addDigest(DigestChoice.SHA1);
         }
         
         /**
