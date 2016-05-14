@@ -47,13 +47,14 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.validation.Validator;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.xml.security.Init;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.keys.content.KeyName;
@@ -66,20 +67,16 @@ import org.apache.xml.security.signature.reference.ReferenceSubTreeData;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
-import org.opensaml.ws.soap.client.http.HttpClientBuilder;
-import org.opensaml.ws.soap.client.http.TLSProtocolSocketFactory;
-import org.opensaml.xml.schema.SchemaBuilder;
-import org.opensaml.xml.schema.SchemaBuilder.SchemaLanguage;
-import org.opensaml.xml.security.BasicSecurityConfiguration;
-import org.opensaml.xml.security.DefaultSecurityConfigurationBootstrap;
-import org.opensaml.xml.security.SecurityHelper;
-import org.opensaml.xml.security.x509.BasicX509Credential;
-import org.opensaml.xml.security.x509.X509Util;
-import org.opensaml.xml.signature.Signature;
-import org.opensaml.xml.signature.SignatureConstants;
-import org.opensaml.xml.util.Base64;
-import org.opensaml.xml.util.DatatypeHelper;
-import org.opensaml.xml.util.XMLHelper;
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.security.credential.CredentialSupport;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.security.x509.X509Support;
+import org.opensaml.xmlsec.SecurityConfigurationSupport;
+import org.opensaml.xmlsec.SignatureSigningConfiguration;
+import org.opensaml.xmlsec.algorithm.AlgorithmSupport;
+import org.opensaml.xmlsec.signature.Signature;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Attr;
@@ -89,6 +86,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import net.shibboleth.utilities.java.support.httpclient.HttpClientBuilder;
+import net.shibboleth.utilities.java.support.primitive.StringSupport;
+import net.shibboleth.utilities.java.support.xml.AttributeSupport;
+import net.shibboleth.utilities.java.support.xml.ElementSupport;
+import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
+import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 
 public final class XmlSecTool {
 
@@ -165,9 +169,9 @@ public final class XmlSecTool {
         initLogging(cli);
 
         try {
-            Init.init();
-        } catch (Throwable e) {
-            log.error("Unable to initialize XML security libraries", e);
+            InitializationService.initialize();
+        } catch (InitializationException e) {
+            log.error("Unable to initialize OpenSAML library", e);
             System.exit(1);
         }
 
@@ -255,7 +259,7 @@ public final class XmlSecTool {
             InputStream ins = new FileInputStream(cli.getInputFile());
             if (cli.isBase64DecodeInput()) {
                 log.debug("Passing input file through Base64 decoder.");
-                ins = new Base64.InputStream(ins);
+                ins = new Base64InputStream(ins);
             }
             if (cli.isInflateInput()) {
                 log.debug("Passing input file data through Inflater decompression filter");
@@ -285,26 +289,26 @@ public final class XmlSecTool {
     protected static InputStream getXmlInputStreamFromUrl(XmlSecToolCommandLineArguments cli) {
         log.info("Reading XML document from URL '{}'", cli.getInputUrl());
         HttpClientBuilder httpClientBuilder = new HttpClientBuilder();
-        httpClientBuilder.setHttpsProtocolSocketFactory(new TLSProtocolSocketFactory(null, CredentialHelper
-                .buildNoTrustTrustManager()));
+        httpClientBuilder.setConnectionDisregardTLSCertificate(true);
         if (cli.getHttpProxy() != null) {
-            httpClientBuilder.setProxyHost(cli.getHttpProxy());
-            httpClientBuilder.setProxyPort(cli.getHttpProxyPort());
-            httpClientBuilder.setProxyUsername(cli.getHttpProxyUsername());
-            httpClientBuilder.setProxyPassword(cli.getHttpProxyPassword());
+            httpClientBuilder.setConnectionProxyHost(cli.getHttpProxy());
+            httpClientBuilder.setConnectionProxyPort(cli.getHttpProxyPort());
+            httpClientBuilder.setConnectionProxyUsername(cli.getHttpProxyUsername());
+            httpClientBuilder.setConnectionProxyPassword(cli.getHttpProxyPassword());
         }
-        GetMethod getMethod = new GetMethod(cli.getInputUrl());
-        getMethod.setRequestHeader("Accept-Encoding", "gzip,deflate");
+        HttpGet getMethod = new HttpGet(cli.getInputUrl());
+        getMethod.setHeader("Accept-Encoding", "gzip,deflate");
         try {
             HttpClient httpClient = httpClientBuilder.buildClient();
-            httpClient.executeMethod(getMethod);
-            if (getMethod.getStatusCode() != 200) {
-                log.error("Non-ok status code '" + Integer.valueOf(getMethod.getStatusCode()) + "' returned by '"
+            final HttpResponse response = httpClient.execute(getMethod);
+            final int status = response.getStatusLine().getStatusCode();
+            if (status != 200) {
+                log.error("Non-ok status code '" + Integer.valueOf(status) + "' returned by '"
                         + cli.getInputUrl() + "'");
                 System.exit(2);
             }
-            InputStream ins = getMethod.getResponseBodyAsStream();
-            Header contentEncodingHeader = getMethod.getResponseHeader("Content-Encoding");
+            InputStream ins = response.getEntity().getContent();
+            Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
             if (contentEncodingHeader != null) {
                 String contentEncoding = contentEncodingHeader.getValue();
                 if ("deflate".equalsIgnoreCase(contentEncoding)) {
@@ -318,11 +322,13 @@ public final class XmlSecTool {
             }
             if (cli.isBase64DecodeInput()) {
                 log.debug("Passing input file through Base64 decoder.");
-                ins = new Base64.InputStream(ins);
+                ins = new Base64InputStream(ins);
             }
             return ins;
         } catch (IOException e) {
             log.error("Unable to read XML document from " + cli.getInputUrl(), e);
+        } catch (Exception e) {
+            log.error("error building an HTTP client instance for " + cli.getInputUrl(), e);
         }
         System.exit(2);
         return null;
@@ -363,19 +369,12 @@ public final class XmlSecTool {
      * @param xml document to validate
      */
     protected static void schemaValidate(final XmlSecToolCommandLineArguments cli, final Document xml) {
-        Validator validator;
+        final SchemaLanguage schemaLanguage = cli.isXsdSchema() ? SchemaLanguage.XML : SchemaLanguage.RELAX;
+        final File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
+        final SchemaValidator validator;
         try {
-            final File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
-            Schema schema;
-            if (cli.isXsdSchema()) {
-                log.debug("Building W3 XML Schema from file/directory '{}'", schemaFileOrDirectory.getAbsolutePath());
-                schema = SchemaBuilder.buildSchema(SchemaLanguage.XML, schemaFileOrDirectory);
-            } else {
-                log.debug("Building RELAX NG Schema from file/directory '{}'", schemaFileOrDirectory.getAbsolutePath());
-                schema = SchemaBuilder.buildSchema(SchemaLanguage.RELAX, schemaFileOrDirectory);
-            }
-
-            validator = schema.newValidator();
+            log.debug("Building W3 XML Schema from file/directory '{}'", schemaFileOrDirectory.getAbsolutePath());
+            validator = new SchemaValidator(schemaLanguage, schemaFileOrDirectory);
         } catch (SAXException e) {
             log.error("Invalid XML schema files, unable to validate XML", e);
             System.exit(RC_INVALID_XS);
@@ -421,7 +420,8 @@ public final class XmlSecTool {
          *    * fall back to a signature algorithm based on the signing credential type.
          */
         BasicX509Credential signingCredential = getCredential(cli);
-        BasicSecurityConfiguration securityConfig = DefaultSecurityConfigurationBootstrap.buildDefaultConfig();
+        SignatureSigningConfiguration securityConfig =
+                SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration();
         String signatureAlgorithm = cli.getSignatureAlgorithm();
         if (signatureAlgorithm == null) {
             final String credentialAlgorithm = signingCredential.getPublicKey().getAlgorithm();
@@ -431,11 +431,21 @@ public final class XmlSecTool {
             } else if ("EC".equals(credentialAlgorithm)) {
                 signatureAlgorithm = cli.getDigest().getEcdsaAlgorithm();
             } else {
-                signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
+                /*
+                 * Not RSA, not EC, so probably some kind of symmetric algorithm.
+                 * 
+                 * Previously handled this way:
+                 * 
+                 * signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
+                 * 
+                 * For now, just refuse to deal with it.
+                 */
+                log.error("unimplemented signing credential type: {}", credentialAlgorithm);
+                System.exit(RC_SIG);
             }
             log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
         }
-        boolean hmac = SecurityHelper.isHMAC(signatureAlgorithm);
+        boolean hmac = AlgorithmSupport.isHMAC(signatureAlgorithm);
         Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
         
         /*
@@ -471,7 +481,7 @@ public final class XmlSecTool {
             signatureElement = signature.getElement();
 
             addSignatureELement(cli, documentRoot, signatureElement);
-            signature.sign(SecurityHelper.extractSigningKey(signingCredential));
+            signature.sign(CredentialSupport.extractSigningKey(signingCredential));
             log.info("XML document successfully signed");
         } catch (XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
@@ -535,7 +545,7 @@ public final class XmlSecTool {
             if (referenceAttribute != null) {
                 // Mark the reference attribute as a valid ID attribute
                 rootElement.setIdAttributeNode(referenceAttribute, true);
-                reference = DatatypeHelper.safeTrim(referenceAttribute.getValue());
+                reference = StringSupport.trim(referenceAttribute.getValue());
                 if (reference.length() > 0) {
                     reference = "#" + reference;
                 }
@@ -604,7 +614,7 @@ public final class XmlSecTool {
          * If the reference is empty, it implicitly references the document element
          * and no attribute is being referenced.
          */
-        if (DatatypeHelper.isEmpty(referenceUri)) {
+        if (referenceUri == null || referenceUri.trim().isEmpty()) {
             log.debug("reference was empty; no ID marking required");
             return;
         }
@@ -612,7 +622,7 @@ public final class XmlSecTool {
         /*
          * If something has already identified an ID element, don't interfere
          */
-        if (XMLHelper.getIdAttribute(docElement) != null ) {
+        if (AttributeSupport.getIdAttribute(docElement) != null ) {
             log.debug("document element already has an ID attribute");
             return;
         }
@@ -665,7 +675,7 @@ public final class XmlSecTool {
                 return;
             }
         }
-        log.debug("XML document contained Signature element\n{}", XMLHelper.prettyPrintXML(signatureElement));
+        log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
 
         log.debug("Creating XML security library XMLSignature object");
         XMLSignature signature = null;
@@ -705,8 +715,8 @@ public final class XmlSecTool {
             System.exit(RC_SIG);
         }        
 
-        Key verificationKey = SecurityHelper.extractVerificationKey(getCredential(cli));
-        log.debug("Verifying XML signature with key\n{}", Base64.encodeBytes(verificationKey.getEncoded()));
+        Key verificationKey = CredentialSupport.extractVerificationKey(getCredential(cli));
+        log.debug("Verifying XML signature with key\n{}", Base64.encodeBase64String(verificationKey.getEncoded()));
         try {
             if (signature.checkSignatureValue(verificationKey)) {
                 /*
@@ -869,7 +879,7 @@ public final class XmlSecTool {
      */
     protected static Element getSignatureElement(Document xmlDoc) {
         List<Element> sigElements =
-                XMLHelper
+                ElementSupport
                         .getChildElementsByTagNameNS(xmlDoc.getDocumentElement(),
                                 Signature.DEFAULT_ELEMENT_NAME.getNamespaceURI(),
                                 Signature.DEFAULT_ELEMENT_NAME.getLocalPart());
@@ -963,7 +973,7 @@ public final class XmlSecTool {
                     log.error("Unable to read CRL file " + crlFilePath);
                     System.exit(RC_INVALID_CRED);
                 }
-                crls.addAll(X509Util.decodeCRLs(crlFile));
+                crls.addAll(X509Support.decodeCRLs(crlFile));
             }
         } catch (CRLException e) {
             log.error("Unable to parse CRL file " + crlFile.getAbsolutePath(), e);
@@ -996,7 +1006,7 @@ public final class XmlSecTool {
             OutputStream out = new FileOutputStream(cli.getOutputFile());
             if (cli.isBase64EncodedOutput()) {
                 log.debug("Base64 encoding output to file");
-                out = new Base64.OutputStream(out);
+                out = new Base64OutputStream(out);
             }
             if (cli.isDeflateOutput()) {
                 log.debug("Deflate compressing output to file");

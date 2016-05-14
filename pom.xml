@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>net.shibboleth</groupId>
-        <artifactId>parent-v2</artifactId>
-        <version>TRUNK-SNAPSHOT</version>
+        <artifactId>parent-v3</artifactId>
+        <version>9</version>
     </parent>
 
     <groupId>net.shibboleth.tool</groupId>
@@ -22,7 +22,9 @@
     </description>
 
     <properties>
-        <svn.relative.location>utilities/xmlsectool</svn.relative.location>
+        <opensaml.groupId>org.opensaml</opensaml.groupId>
+        <opensaml.version>3.2.0</opensaml.version>
+        <java-support.version>7.2.0</java-support.version>
     </properties>
 
     <repositories>
@@ -45,57 +47,71 @@
     <dependencies>
         <!-- Compile dependencies -->
         <dependency>
-            <groupId>org.opensaml</groupId>
-            <artifactId>openws</artifactId>
-            <version>1.5.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>velocity</groupId>
-                    <artifactId>velocity</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <version>${java-support.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.opensaml</groupId>
-            <artifactId>xmltooling</artifactId>
-            <version>1.4.0</version>
+            <groupId>${opensaml.groupId}</groupId>
+            <artifactId>opensaml-core</artifactId>
+            <version>${opensaml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${opensaml.groupId}</groupId>
+            <artifactId>opensaml-security-api</artifactId>
+            <version>${opensaml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${opensaml.groupId}</groupId>
+            <artifactId>opensaml-xmlsec-api</artifactId>
+            <version>${opensaml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.internet2.middleware</groupId>
-            <artifactId>shibboleth-jce</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>${httpclient.groupId}</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${httpclient.groupId}</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
         </dependency>
 
         <!-- Runtime dependencies -->
-
-        <!-- Managed Dependencies -->
+        <dependency>
+            <groupId>${opensaml.groupId}</groupId>
+            <artifactId>opensaml-xmlsec-impl</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>${slf4j.groupId}</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Test Dependencies -->
+
     </dependencies>
 
     <profiles>

@@ -13,7 +13,7 @@
 			<outputDirectory>/lib</outputDirectory>
             <directoryMode>774</directoryMode>
             <fileMode>444</fileMode>
-            <scope>compile</scope>
+            <scope>runtime</scope>
 			<includes>
 				<include>*:jar:*</include>
 			</includes>

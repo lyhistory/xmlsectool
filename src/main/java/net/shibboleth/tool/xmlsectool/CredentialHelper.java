@@ -30,13 +30,12 @@ import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import javax.net.ssl.X509TrustManager;
-
-import org.opensaml.xml.security.SecurityHelper;
-import org.opensaml.xml.security.x509.BasicX509Credential;
-import org.opensaml.xml.security.x509.X509Util;
+import org.opensaml.security.crypto.KeySupport;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.security.x509.X509Support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,23 +44,6 @@ public class CredentialHelper {
 
     /** Class logger. */
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
-
-    public static X509TrustManager buildNoTrustTrustManager() {
-        X509TrustManager noTrustManager = new X509TrustManager() {
-
-            public void checkClientTrusted(X509Certificate ax509certificate[], String s) {
-            }
-
-            public void checkServerTrusted(X509Certificate ax509certificate[], String s) {
-            }
-
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-
-        };
-        return noTrustManager;
-    }
 
     /**
      * Reads in the X509 credentials from the filesystem.
@@ -74,22 +56,25 @@ public class CredentialHelper {
      */
     protected static BasicX509Credential getFileBasedCredentials(String keyFile, String keyPassword,
             String certificateFile) throws KeyException, CertificateException {
-        BasicX509Credential credential = new BasicX509Credential();
         LOG.debug("Reading PEM/DER encoded credentials from the filesystem");
+
+        // First, read the certificate
+        LOG.debug("Reading certificates from file {}", certificateFile);
+        final Collection<X509Certificate> certificates = X509Support.decodeCertificates(new File(certificateFile));
+        final X509Certificate entityCertificate = certificates.iterator().next();
+        final BasicX509Credential credential = new BasicX509Credential(entityCertificate);
+        credential.setEntityCertificateChain(certificates);
+        LOG.debug("Certificates successfully read");
+        
         if (keyFile != null) {
             LOG.debug("Reading private key from file {}", keyFile);
             if (keyPassword == null) {
-                credential.setPrivateKey(SecurityHelper.decodePrivateKey(new File(keyFile), null));
+                credential.setPrivateKey(KeySupport.decodePrivateKey(new File(keyFile), null));
             } else {
-                credential.setPrivateKey(SecurityHelper.decodePrivateKey(new File(keyFile), keyPassword.toCharArray()));
+                credential.setPrivateKey(KeySupport.decodePrivateKey(new File(keyFile), keyPassword.toCharArray()));
             }
             LOG.debug("Private key succesfully read");
         }
-        LOG.debug("Reading certificates from file {}", certificateFile);
-        credential.setEntityCertificateChain(X509Util.decodeCertificate(new File(certificateFile)));
-        credential.setEntityCertificate(credential.getEntityCertificateChain().iterator().next());
-        credential.setPublicKey(credential.getEntityCertificate().getPublicKey());
-        LOG.debug("Certificates successfully");
 
         return credential;
     }
@@ -152,7 +137,7 @@ public class CredentialHelper {
             if (keystoreProvider != null) {
                 LOG.debug("Creating PKCS11 keystore with provider {} and configuration file {}", keystoreProvider,
                         pkcs11Config);
-                Class<Provider> providerClass = (Class<Provider>) XmlSecTool.class.getClassLoader().loadClass(
+                Class<Provider> providerClass = (Class<Provider>) CredentialHelper.class.getClassLoader().loadClass(
                         keystoreProvider);
                 Constructor<Provider> providerConstructor = providerClass.getConstructor(String.class);
                 Provider pkcs11Provider = providerConstructor.newInstance(pkcs11Config);
@@ -196,18 +181,19 @@ public class CredentialHelper {
         KeyStore.Entry keyEntry = keystore.getEntry(keyAlias,
                 new KeyStore.PasswordProtection(keyPassword.toCharArray()));
 
-        BasicX509Credential credential = new BasicX509Credential();
+        BasicX509Credential credential;
         if (keyEntry instanceof PrivateKeyEntry) {
             PrivateKeyEntry privKeyEntry = (PrivateKeyEntry) keyEntry;
             List certChain = Arrays.asList(privKeyEntry.getCertificateChain());
-            credential.setEntityCertificate((X509Certificate) privKeyEntry.getCertificate());
+            credential = new BasicX509Credential((X509Certificate) privKeyEntry.getCertificate());
             credential.setEntityCertificateChain(certChain);
             credential.setPrivateKey(privKeyEntry.getPrivateKey());
-            credential.setPublicKey(privKeyEntry.getCertificate().getPublicKey());
         } else if (keyEntry instanceof KeyStore.TrustedCertificateEntry) {
             KeyStore.TrustedCertificateEntry certEntry = (KeyStore.TrustedCertificateEntry) keyEntry;
-            credential.setEntityCertificate((X509Certificate) certEntry.getTrustedCertificate());
-            credential.setPublicKey(credential.getEntityCertificate().getPublicKey());
+            credential = new BasicX509Credential((X509Certificate) certEntry.getTrustedCertificate());
+        } else {
+            // unknown kind of Keystore.Entry
+            throw new CertificateException("unknown type of key entry in keystore");
         }
 
         LOG.debug("Successfully read credentials from keystore");

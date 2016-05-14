@@ -17,7 +17,7 @@
 
 package net.shibboleth.tool.xmlsectool;
 
-import org.opensaml.xml.signature.SignatureConstants;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 /**
  * The digest method to use in the various signature algorithms.

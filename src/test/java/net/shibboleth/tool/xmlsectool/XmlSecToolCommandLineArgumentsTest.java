@@ -1,6 +1,6 @@
 package net.shibboleth.tool.xmlsectool;
 
-import org.opensaml.xml.signature.SignatureConstants;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

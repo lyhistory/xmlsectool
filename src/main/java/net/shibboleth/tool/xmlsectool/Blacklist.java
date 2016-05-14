@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.opensaml.xml.signature.SignatureConstants;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 /**
  * A blacklist of digest and signature algorithms we should not accept during
