@@ -10,7 +10,7 @@
 
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>lib</outputDirectory>
             <directoryMode>774</directoryMode>
             <fileMode>444</fileMode>
             <scope>runtime</scope>
@@ -24,7 +24,7 @@
 		<!-- Documentation -->
 		<fileSet>
 			<directory>doc/</directory>
-			<outputDirectory>/doc</outputDirectory>
+			<outputDirectory>doc</outputDirectory>
 		</fileSet>
 
 		<!-- Copy execution srcipts into the root of the package -->
