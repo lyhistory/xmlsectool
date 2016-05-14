@@ -156,10 +156,10 @@ public final class CredentialHelper {
         } catch (ClassNotFoundException e) {
             LOG.error((new StringBuilder("Unable to load keystore provider class: ")).append(keystoreProvider)
                     .toString());
-            System.exit(XmlSecTool.RC_INIT);
+            throw new Terminator(ReturnCode.RC_INIT);
         } catch (NoSuchMethodException e) {
             LOG.error("Keystore provider class does not provide a String-argument constructor");
-            System.exit(XmlSecTool.RC_INIT);
+            throw new Terminator(ReturnCode.RC_INIT);
         } catch (Exception e) {
             LOG.error("Unable to read PKCS11 keystore", e);
             throw new IOException("Unable to read PKCS11 keystore", e);

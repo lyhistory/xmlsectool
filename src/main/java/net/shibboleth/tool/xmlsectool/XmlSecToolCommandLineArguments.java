@@ -746,6 +746,6 @@ public class XmlSecToolCommandLineArguments {
         System.out.println();
         printHelp(System.out);
         System.out.flush();
-        System.exit(XmlSecTool.RC_INIT);
+        throw new Terminator(ReturnCode.RC_INIT);
     }
 }

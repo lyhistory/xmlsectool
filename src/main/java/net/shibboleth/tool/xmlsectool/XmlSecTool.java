@@ -94,40 +94,11 @@ import net.shibboleth.utilities.java.support.xml.ElementSupport;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 
+/**
+ *  A command line tool for checking an XML file for well-formedness and validity as well as
+ *  signing and checking signatures.
+ */
 public final class XmlSecTool {
-
-    /** Return code indicating command completed successfully, {@value} . */
-    public static final int RC_OK = 0;
-
-    /** Return code indicating an initialization error, {@value} . */
-    public static final int RC_INIT = 1;
-
-    /** Return code indicating an error reading files, {@value} . */
-    public static final int RC_IO = 2;
-
-    /** Return code indicating the input XML was not well formed, {@value} . */
-    public static final int RC_MALFORMED_XML = 3;
-
-    /** Return code indicating input XML was not valid, {@value} . */
-    public static final int RC_INVALID_XML = 4;
-
-    /** Return code indicating an error validating the XML, {@value} . */
-    public static final int RC_INVALID_XS = 5;
-
-    /** Return code indicating an error reading the credentials, {@value} . */
-    public static final int RC_INVALID_CRED = 6;
-
-    /** Return code indicating indicating that signing or signature verification failed, {@value} . */
-    public static final int RC_SIG = 7;
-    
-    /** Return code indicating that the JAVA_HOME variable is not set within the shell script, {@value} . */
-    public static final int RC_NOHOME = 8;
-    
-    /** Return code indicating that the "java" command is not executable within the shell script, {@value} . */
-    public static final int RC_NOJAVA = 9;
-
-    /** Return code indicating an unknown error occurred, {@value} . */
-    public static final int RC_UNKNOWN = -1;
 
     /** Class logger. */
     private static Logger log;
@@ -136,49 +107,33 @@ public final class XmlSecTool {
     private XmlSecTool() {}
 
     /**
-     * @param args
+     * Main command-line entry point.
+     * 
+     * @param args command-line arguments
      */
     public static void main(final String[] args) {
-        final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
-        cli.parseCommandLineArguments(args);
-
-        if (cli.doHelp()) {
-            cli.printHelp(System.out);
-            return;
-        }
-        
-        if (cli.doListBlacklist()) {
-            System.out.println("Digest algorithm blacklist:");
-            if (cli.getBlacklist().getDigestBlacklist().isEmpty()) {
-                System.out.println("   blacklist is empty");
-            } else {
-                for (final String uri: cli.getBlacklist().getDigestBlacklist()) {
-                    System.out.println("   " + uri);
-                }
-            }
-            System.out.println();
-            System.out.println("Signature algorithm blacklist:");
-            if (cli.getBlacklist().getSignatureBlacklist().isEmpty()) {
-                System.out.println("   blacklist is empty");
-            } else {
-                for (final String uri: cli.getBlacklist().getSignatureBlacklist()) {
-                    System.out.println("   " + uri);
-                }
-            }
-            System.out.println();
-            return;
-        }
-
-        initLogging(cli);
-
         try {
-            InitializationService.initialize();
-        } catch (InitializationException e) {
-            log.error("Unable to initialize OpenSAML library", e);
-            System.exit(RC_INIT);
-        }
+            final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
+            cli.parseCommandLineArguments(args);
+            initLogging(cli);
 
-        try {
+            try {
+                InitializationService.initialize();
+            } catch (InitializationException e) {
+                log.error("Unable to initialize OpenSAML library", e);
+                throw new Terminator(ReturnCode.RC_INIT);
+            }
+
+            if (cli.doHelp()) {
+                cli.printHelp(System.out);
+                return;
+            }
+            
+            if (cli.doListBlacklist()) {
+                listBlacklistCommand(cli.getBlacklist());
+                return;
+            }
+
             final Document xml = parseXML(cli);
 
             if (cli.doSchemaValidation()) {
@@ -197,10 +152,38 @@ public final class XmlSecTool {
                 writeDocument(cli, xml);
             }
 
+        } catch (Terminator t) {
+            System.exit(t.getExitCode());
         } catch (Throwable t) {
             log.error("Unknown error", t);
-            System.exit(RC_UNKNOWN);
+            System.exit(ReturnCode.RC_UNKNOWN.getCode());
         }
+    }
+
+    /**
+     * Perform the --listBlacklist command.
+     * 
+     * @param blacklist blacklist to list
+     */
+    private static void listBlacklistCommand(final Blacklist blacklist) {
+        System.out.println("Digest algorithm blacklist:");
+        if (blacklist.getDigestBlacklist().isEmpty()) {
+            System.out.println("   blacklist is empty");
+        } else {
+            for (final String uri: blacklist.getDigestBlacklist()) {
+                System.out.println("   " + uri);
+            }
+        }
+        System.out.println();
+        System.out.println("Signature algorithm blacklist:");
+        if (blacklist.getSignatureBlacklist().isEmpty()) {
+            System.out.println("   blacklist is empty");
+        } else {
+            for (final String uri: blacklist.getSignatureBlacklist()) {
+                System.out.println("   " + uri);
+            }
+        }
+        System.out.println();
     }
 
     /**
@@ -226,13 +209,11 @@ public final class XmlSecTool {
             return xmlDoc;
         } catch (IOException e) {
             log.error("Error reading XML document from input source", e);
-            System.exit(RC_IO);
+            throw new Terminator(ReturnCode.RC_IO);
         } catch (SAXException e) {
             log.error("XML document was not well formed", e);
-            System.exit(RC_MALFORMED_XML);
+            throw new Terminator(ReturnCode.RC_MALFORMED_XML);
         }
-
-        return null;
     }
 
     /**
@@ -248,15 +229,15 @@ public final class XmlSecTool {
             final File inputFile = new File(cli.getInputFile());
             if (!inputFile.exists()) {
                 log.error("Input file '{}' does not exist", cli.getInputFile());
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
             if (inputFile.isDirectory()) {
                 log.error("Input file '{}' is a directory", cli.getInputFile());
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
             if (!inputFile.canRead()) {
                 log.error("Input file '{}' can not be read", cli.getInputFile());
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
 
             InputStream ins = new FileInputStream(cli.getInputFile());
@@ -276,10 +257,8 @@ public final class XmlSecTool {
             return ins;
         } catch (IOException e) {
             log.error("Unable to read input file '{}'", cli.getInputFile(), e);
-            System.exit(RC_IO);
+            throw new Terminator(ReturnCode.RC_IO);
         }
-
-        return null;
     }
 
     /**
@@ -308,7 +287,7 @@ public final class XmlSecTool {
             if (status != 200) {
                 log.error("Non-ok status code '" + Integer.valueOf(status) + "' returned by '"
                         + cli.getInputUrl() + "'");
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
             InputStream ins = response.getEntity().getContent();
             final Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
@@ -333,8 +312,7 @@ public final class XmlSecTool {
         } catch (Exception e) {
             log.error("error building an HTTP client instance for " + cli.getInputUrl(), e);
         }
-        System.exit(RC_IO);
-        return null;
+        throw new Terminator(ReturnCode.RC_IO);
     }
 
     /**
@@ -359,10 +337,8 @@ public final class XmlSecTool {
             return newFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             log.error("Unable to create XML parser", e);
-            System.exit(RC_UNKNOWN);
+            throw new Terminator(ReturnCode.RC_UNKNOWN);
         }
-
-        return null;
     }
 
     /**
@@ -380,9 +356,7 @@ public final class XmlSecTool {
             validator = new SchemaValidator(schemaLanguage, schemaFileOrDirectory);
         } catch (SAXException e) {
             log.error("Invalid XML schema files, unable to validate XML", e);
-            System.exit(RC_INVALID_XS);
-            // Help Java understand that validator is guaranteed to have been assigned below
-            return;
+            throw new Terminator(ReturnCode.RC_INVALID_XS);
         }
         
         try {
@@ -391,15 +365,15 @@ public final class XmlSecTool {
             log.info("XML document is schema valid");
         } catch (SAXException e) {
             log.error("XML is not schema valid", e);
-            System.exit(RC_INVALID_XML);
+            throw new Terminator(ReturnCode.RC_INVALID_XML);
         } catch (IOException e) {
             log.error("internal error: I/O exception while validating XML", e);
-            System.exit(RC_INVALID_XML);
+            throw new Terminator(ReturnCode.RC_INVALID_XML);
         }
     }
 
     /**
-     * Signs and outputs the signed SAML document.
+     * Signs a document.
      * 
      * @param cli command line arguments
      * @param xml document to be signed
@@ -410,7 +384,7 @@ public final class XmlSecTool {
         Element signatureElement = getSignatureElement(xml);
         if (signatureElement != null) {
             log.error("XML document is already signed");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         /*
@@ -442,7 +416,7 @@ public final class XmlSecTool {
                  * For now, just refuse to deal with it.
                  */
                 log.error("unimplemented signing credential type: {}", credentialAlgorithm);
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
             log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
         }
@@ -486,7 +460,7 @@ public final class XmlSecTool {
             log.info("XML document successfully signed");
         } catch (XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 
@@ -523,7 +497,7 @@ public final class XmlSecTool {
             }
         } catch (XMLSecurityException e) {
             log.error("Unable to constructor signature KeyInfo", e);
-            System.exit(RC_UNKNOWN);
+            throw new Terminator(ReturnCode.RC_UNKNOWN);
         } catch (CRLException e) {
 
         }
@@ -598,7 +572,7 @@ public final class XmlSecTool {
             }
         } catch (NumberFormatException e) {
             log.error("Invalid signature position: " + cli.getSignaturePosition());
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 
@@ -635,7 +609,7 @@ public final class XmlSecTool {
          */
         if (!referenceUri.startsWith("#")) {
             log.error("Signature Reference URI was not a document fragment reference: " + referenceUri);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
         final String id = referenceUri.substring(1);
 
@@ -672,7 +646,7 @@ public final class XmlSecTool {
         if (signatureElement == null) {
             if (cli.isSignatureRequired()) {
                 log.error("Signature required but XML document is not signed");
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             } else {
                 log.info("XML document is not signed, no verification performed");
                 return;
@@ -686,12 +660,12 @@ public final class XmlSecTool {
             signature = new XMLSignature(signatureElement, "");
         } catch (XMLSecurityException e) {
             log.error("Unable to read XML signature", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         if (signature.getObjectLength() != 0) {
             log.error("Signature contained an Object element, this is not allowed");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         final Reference ref = extractReference(signature);
@@ -703,11 +677,11 @@ public final class XmlSecTool {
             log.debug("blacklist checking digest {}", alg);
             if (cli.getBlacklist().isBlacklistedDigest(alg)) {
                 log.error("Digest algorithm {} is blacklisted", alg);
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
         } catch (XMLSignatureException e) {
             log.error("unable to retrieve signature digest algorithm", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
         
         // check signature algorithm against blacklist
@@ -715,7 +689,7 @@ public final class XmlSecTool {
         log.debug("blacklist checking signature method {}", alg);
         if (cli.getBlacklist().isBlacklistedSignature(alg)) {
             log.error("Signature algorithm {} is blacklisted", alg);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }        
 
         final Key verificationKey = CredentialSupport.extractVerificationKey(getCredential(cli));
@@ -735,11 +709,11 @@ public final class XmlSecTool {
                 log.info("XML document signature verified.");
             } else {
                 log.error("XML document signature verification failed");
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
         } catch (XMLSignatureException e) {
             log.error("XML document signature verification failed with an error", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 
@@ -754,7 +728,7 @@ public final class XmlSecTool {
         final int numReferences = signature.getSignedInfo().getLength();
         if (numReferences != 1) {
             log.error("Signature SignedInfo had invalid number of References: " + numReferences);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         Reference ref = null;
@@ -762,11 +736,11 @@ public final class XmlSecTool {
             ref = signature.getSignedInfo().item(0);
         } catch (XMLSecurityException e) {
             log.error("Apache XML Security exception obtaining Reference", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
         if (ref == null) {
             log.error("Signature Reference was null");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
         return ref;
     }
@@ -808,11 +782,11 @@ public final class XmlSecTool {
             if (!expectedSignedNode.isSameNode(resolvedSignedNode)) {
                 log.error("Signature Reference URI \"" + reference.getURI()
                         + "\" was resolved to a node other than the document element");
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
         } else {
             log.error("Signature Reference URI did not resolve to a subtree");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 
@@ -831,18 +805,18 @@ public final class XmlSecTool {
             transforms = reference.getTransforms();
         } catch (XMLSecurityException e) {
             log.error("Apache XML Security error obtaining Transforms instance", e);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         if (transforms == null) {
             log.error("Error obtaining Transforms instance, null was returned");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         final int numTransforms = transforms.getLength();
         if (numTransforms > 2) {
             log.error("Invalid number of Transforms was present: " + numTransforms);
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         boolean sawEnveloped = false;
@@ -852,7 +826,7 @@ public final class XmlSecTool {
                 transform = transforms.item(i);
             } catch (TransformationException e) {
                 log.error("Error obtaining transform instance", e);
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
             final String uri = transform.getURI();
             if (Transforms.TRANSFORM_ENVELOPED_SIGNATURE.equals(uri)) {
@@ -863,13 +837,13 @@ public final class XmlSecTool {
                 log.debug("Saw Exclusive C14N signature transform");
             } else {
                 log.error("Saw invalid signature transform: " + uri);
-                System.exit(RC_SIG);
+                throw new Terminator(ReturnCode.RC_SIG);
             }
         }
 
         if (!sawEnveloped) {
             log.error("Signature was missing the required Enveloped signature transform");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 
@@ -893,7 +867,7 @@ public final class XmlSecTool {
 
         if (sigElements.size() > 1) {
             log.error("XML document contained more than one signature, unable to process");
-            System.exit(RC_SIG);
+            throw new Terminator(ReturnCode.RC_SIG);
         }
 
         return sigElements.get(0);
@@ -907,7 +881,7 @@ public final class XmlSecTool {
      * @return the credentials
      */
     protected static BasicX509Credential getCredential(final XmlSecToolCommandLineArguments cli) {
-        BasicX509Credential credential = null;
+        final BasicX509Credential credential;
         if (cli.getCertificate() != null) {
             try {
                 credential =
@@ -915,10 +889,10 @@ public final class XmlSecTool {
                                 cli.getCertificate());
             } catch (KeyException e) {
                 log.error("Unable to read key file " + cli.getKey(), e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             } catch (CertificateException e) {
                 log.error("Unable to read certificate file " + cli.getKey(), e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
         } else if (cli.getPkcs11Config() != null) {
             try {
@@ -927,10 +901,10 @@ public final class XmlSecTool {
                                 cli.getPkcs11Config(), cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Error accessing PKCS11 store", e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             } catch (GeneralSecurityException e) {
                 log.error("Unable to recover key entry from PKCS11 store", e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
         } else {
             try {
@@ -939,10 +913,10 @@ public final class XmlSecTool {
                                 cli.getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
             } catch (IOException e) {
                 log.error("Unable to read keystore " + cli.getKeystore(), e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             } catch (GeneralSecurityException e) {
                 log.error("Unable to recover key entry from keystore", e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
         }
 
@@ -974,13 +948,13 @@ public final class XmlSecTool {
                 crlFile = new File(crlFilePath);
                 if (!crlFile.exists() || !crlFile.canRead()) {
                     log.error("Unable to read CRL file " + crlFilePath);
-                    System.exit(RC_INVALID_CRED);
+                    throw new Terminator(ReturnCode.RC_INVALID_CRED);
                 }
                 crls.addAll(X509Support.decodeCRLs(crlFile));
             }
         } catch (CRLException e) {
             log.error("Unable to parse CRL file " + crlFile.getAbsolutePath(), e);
-            System.exit(RC_INVALID_CRED);
+            throw new Terminator(ReturnCode.RC_INVALID_CRED);
         }
 
         return crls;
@@ -998,12 +972,12 @@ public final class XmlSecTool {
             final File file = new File(cli.getOutputFile());
             if (file.exists() && file.isDirectory()) {
                 log.error("Output file " + cli.getOutputFile() + " is a directory");
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
             file.createNewFile();
             if (!file.canWrite()) {
                 log.error("Unable to write to output file " + cli.getOutputFile());
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
 
             OutputStream out = new FileOutputStream(cli.getOutputFile());
@@ -1028,14 +1002,14 @@ public final class XmlSecTool {
                 serializer.transform(new DOMSource(xml), new StreamResult(out));
             } catch (TransformerException e) {
                 log.error("Unable to write out XML", e);
-                System.exit(RC_IO);
+                throw new Terminator(ReturnCode.RC_IO);
             }
             out.flush();
             out.close();
             log.info("XML document written to file {}", file.getAbsolutePath());
         } catch (IOException e) {
             log.error("Unable to write document to file " + cli.getOutputFile(), e);
-            System.exit(RC_IO);
+            throw new Terminator(ReturnCode.RC_IO);
         }
     }
 
