@@ -644,13 +644,8 @@ public final class XmlSecTool {
             final Document xmlDocument) {
         final Element signatureElement = getSignatureElement(xmlDocument);
         if (signatureElement == null) {
-            if (cli.isSignatureRequired()) {
-                log.error("Signature required but XML document is not signed");
-                throw new Terminator(ReturnCode.RC_SIG);
-            } else {
-                log.info("XML document is not signed, no verification performed");
-                return;
-            }
+            log.error("Signature required but XML document is not signed");
+            throw new Terminator(ReturnCode.RC_SIG);
         }
         log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
 

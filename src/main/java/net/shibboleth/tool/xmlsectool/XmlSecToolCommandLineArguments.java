@@ -60,7 +60,6 @@ public class XmlSecToolCommandLineArguments {
     private static final String SIGNATURE_ALGORITHM_ARG = "signatureAlgorithm";
     private static final String KI_KEY_NAME_ARG = "keyInfoKeyName";
     private static final String KI_CRL_ARG = "keyInfoCRL";
-    private static final String SIG_REQUIRED_ARG = "signatureRequired";
     private static final String CERT_ARG = "certificate";
     private static final String KEY_ARG = "key";
     private static final String KEY_PASSWORD_ARG = "keyPassword";
@@ -129,9 +128,6 @@ public class XmlSecToolCommandLineArguments {
     private boolean rngSchema;
 
     // Signature
-    @Parameter(names = OPT + SIG_REQUIRED_ARG)
-    private boolean signatureRequired = true;
-
     @Parameter(names = OPT + SIG_REF_ID_ATT_ARG)
     private String refIdAttributeName;
 
@@ -319,10 +315,6 @@ public class XmlSecToolCommandLineArguments {
 
     public boolean doSignatureVerify() {
         return signatureVerify;
-    }
-
-    public boolean isSignatureRequired() {
-        return signatureRequired;
     }
 
     public String getReferenceIdAttributeName() {
@@ -644,11 +636,6 @@ public class XmlSecToolCommandLineArguments {
         out.println(String.format("  --%-20s %s", KI_CRL_ARG,
                 "Specifies a file path for a CRL to be included in the key info.  "
                         + "Option may be used more than once."));
-
-        out.println();
-        out.println("Signature Verification Options");
-        out.println(String.format("  --%-20s %s", SIG_REQUIRED_ARG,
-                "Treat unsigned documents as an error.  (default: true)"));
 
         out.println();
         out.println("PEM/DER Encoded Certificate/Key Options - "
