@@ -172,7 +172,7 @@ public final class XmlSecTool {
             InitializationService.initialize();
         } catch (InitializationException e) {
             log.error("Unable to initialize OpenSAML library", e);
-            System.exit(1);
+            System.exit(RC_INIT);
         }
 
         try {
@@ -305,7 +305,7 @@ public final class XmlSecTool {
             if (status != 200) {
                 log.error("Non-ok status code '" + Integer.valueOf(status) + "' returned by '"
                         + cli.getInputUrl() + "'");
-                System.exit(2);
+                System.exit(RC_IO);
             }
             InputStream ins = response.getEntity().getContent();
             Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
@@ -330,7 +330,7 @@ public final class XmlSecTool {
         } catch (Exception e) {
             log.error("error building an HTTP client instance for " + cli.getInputUrl(), e);
         }
-        System.exit(2);
+        System.exit(RC_IO);
         return null;
     }
 
@@ -995,12 +995,12 @@ public final class XmlSecTool {
             File file = new File(cli.getOutputFile());
             if (file.exists() && file.isDirectory()) {
                 log.error("Output file " + cli.getOutputFile() + " is a directory");
-                System.exit(2);
+                System.exit(RC_IO);
             }
             file.createNewFile();
             if (!file.canWrite()) {
                 log.error("Unable to write to output file " + cli.getOutputFile());
-                System.exit(2);
+                System.exit(RC_IO);
             }
 
             OutputStream out = new FileOutputStream(cli.getOutputFile());
@@ -1025,14 +1025,14 @@ public final class XmlSecTool {
                 serializer.transform(new DOMSource(xml), new StreamResult(out));
             } catch (TransformerException e) {
                 log.error("Unable to write out XML", e);
-                System.exit(2);
+                System.exit(RC_IO);
             }
             out.flush();
             out.close();
             log.info("XML document written to file {}", file.getAbsolutePath());
         } catch (IOException e) {
             log.error("Unable to write document to file " + cli.getOutputFile(), e);
-            System.exit(2);
+            System.exit(RC_IO);
         }
     }
 
