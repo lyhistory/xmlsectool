@@ -144,7 +144,7 @@ public final class XmlSecTool {
 
         if (cli.doHelp()) {
             cli.printHelp(System.out);
-            System.exit(RC_OK);
+            return;
         }
         
         if (cli.doListBlacklist()) {
@@ -166,7 +166,7 @@ public final class XmlSecTool {
                 }
             }
             System.out.println();
-            System.exit(RC_OK);
+            return;
         }
 
         initLogging(cli);
