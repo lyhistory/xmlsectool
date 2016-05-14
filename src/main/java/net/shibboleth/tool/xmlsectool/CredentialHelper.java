@@ -40,10 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Helper class for reading in cryptographic credentials. */
-public class CredentialHelper {
+public final class CredentialHelper {
 
     /** Class logger. */
     private static final Logger LOG = LoggerFactory.getLogger(CredentialHelper.class);
+    
+    /** Constructor. */
+    private CredentialHelper() {}
 
     /**
      * Reads in the X509 credentials from the filesystem.

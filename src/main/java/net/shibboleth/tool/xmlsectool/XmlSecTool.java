@@ -132,6 +132,9 @@ public final class XmlSecTool {
     /** Class logger. */
     private static Logger log;
 
+    /** Constructor. */
+    private XmlSecTool() {}
+
     /**
      * @param args
      */
@@ -606,8 +609,7 @@ public final class XmlSecTool {
      * @param docElement document element whose appropriate attribute should be marked
      * @param reference reference which references the document element
      */
-    protected static void markIdAttribute(final Element docElement, final Reference reference)
-    {
+    protected static void markIdAttribute(final Element docElement, final Reference reference) {
         final String referenceUri = reference.getURI();
         
         /*
