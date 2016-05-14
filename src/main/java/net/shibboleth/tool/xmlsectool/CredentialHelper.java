@@ -25,6 +25,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyException;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
+import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.CertificateException;
@@ -57,8 +58,8 @@ public final class CredentialHelper {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getFileBasedCredentials(String keyFile, String keyPassword,
-            String certificateFile) throws KeyException, CertificateException {
+    protected static BasicX509Credential getFileBasedCredentials(final String keyFile, final String keyPassword,
+            final String certificateFile) throws KeyException, CertificateException {
         LOG.debug("Reading PEM/DER encoded credentials from the filesystem");
 
         // First, read the certificate
@@ -94,8 +95,9 @@ public final class CredentialHelper {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getKeystoreCredential(String keystorePath, String keystorePassword,
-            String keystoreProvider, String keystoreType, String keyAlias, String keyPassword) throws IOException,
+    protected static BasicX509Credential getKeystoreCredential(final String keystorePath,
+            final String keystorePassword, final String keystoreProvider, final String keystoreType,
+            final String keyAlias, final String keyPassword) throws IOException,
             GeneralSecurityException {
         LOG.debug("Reading credentials from keystore");
 
@@ -109,7 +111,7 @@ public final class CredentialHelper {
             storePassword = keyPassword;
         }
 
-        KeyStore keystore;
+        final KeyStore keystore;
         if (keystoreProvider != null) {
             keystore = KeyStore.getInstance(storeType, keystoreProvider);
         } else {
@@ -131,8 +133,8 @@ public final class CredentialHelper {
      * @return the credentials
      */
     @SuppressWarnings("unchecked")
-    protected static BasicX509Credential getPKCS11Credential(String keystoreProvider, String pkcs11Config,
-            String keyAlias, String keyPassword) throws IOException, GeneralSecurityException {
+    protected static BasicX509Credential getPKCS11Credential(final String keystoreProvider, final String pkcs11Config,
+            final String keyAlias, final String keyPassword) throws IOException, GeneralSecurityException {
         LOG.debug("Install PKCS11 provider");
 
         KeyStore keystore = null;
@@ -140,10 +142,10 @@ public final class CredentialHelper {
             if (keystoreProvider != null) {
                 LOG.debug("Creating PKCS11 keystore with provider {} and configuration file {}", keystoreProvider,
                         pkcs11Config);
-                Class<Provider> providerClass = (Class<Provider>) CredentialHelper.class.getClassLoader().loadClass(
-                        keystoreProvider);
-                Constructor<Provider> providerConstructor = providerClass.getConstructor(String.class);
-                Provider pkcs11Provider = providerConstructor.newInstance(pkcs11Config);
+                final Class<Provider> providerClass =
+                        (Class<Provider>) CredentialHelper.class.getClassLoader().loadClass(keystoreProvider);
+                final Constructor<Provider> providerConstructor = providerClass.getConstructor(String.class);
+                final Provider pkcs11Provider = providerConstructor.newInstance(pkcs11Config);
                 pkcs11Provider.load(new FileInputStream(pkcs11Config));
                 Security.addProvider(pkcs11Provider);
                 keystore = KeyStore.getInstance("PKCS11", pkcs11Provider);
@@ -178,21 +180,21 @@ public final class CredentialHelper {
      * @return the extracted credential
      */
     @SuppressWarnings("unchecked")
-    protected static BasicX509Credential getCredentialFromKeystore(KeyStore keystore, String keyAlias,
-            String keyPassword) throws GeneralSecurityException {
+    protected static BasicX509Credential getCredentialFromKeystore(final KeyStore keystore, final String keyAlias,
+            final String keyPassword) throws GeneralSecurityException {
 
-        KeyStore.Entry keyEntry = keystore.getEntry(keyAlias,
+        final KeyStore.Entry keyEntry = keystore.getEntry(keyAlias,
                 new KeyStore.PasswordProtection(keyPassword.toCharArray()));
 
-        BasicX509Credential credential;
+        final BasicX509Credential credential;
         if (keyEntry instanceof PrivateKeyEntry) {
-            PrivateKeyEntry privKeyEntry = (PrivateKeyEntry) keyEntry;
-            List certChain = Arrays.asList(privKeyEntry.getCertificateChain());
+            final PrivateKeyEntry privKeyEntry = (PrivateKeyEntry) keyEntry;
+            final List certChain = Arrays.asList(privKeyEntry.getCertificateChain());
             credential = new BasicX509Credential((X509Certificate) privKeyEntry.getCertificate());
             credential.setEntityCertificateChain(certChain);
             credential.setPrivateKey(privKeyEntry.getPrivateKey());
-        } else if (keyEntry instanceof KeyStore.TrustedCertificateEntry) {
-            KeyStore.TrustedCertificateEntry certEntry = (KeyStore.TrustedCertificateEntry) keyEntry;
+        } else if (keyEntry instanceof TrustedCertificateEntry) {
+            final TrustedCertificateEntry certEntry = (TrustedCertificateEntry) keyEntry;
             credential = new BasicX509Credential((X509Certificate) certEntry.getTrustedCertificate());
         } else {
             // unknown kind of Keystore.Entry

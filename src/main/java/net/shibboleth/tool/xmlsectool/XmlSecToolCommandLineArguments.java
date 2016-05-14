@@ -18,8 +18,6 @@
 package net.shibboleth.tool.xmlsectool;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
@@ -248,7 +246,7 @@ public class XmlSecToolCommandLineArguments {
     @Parameter(names = HELP_ARG, help = true)
     private boolean help;
 
-    public void parseCommandLineArguments(String[] args) {
+    public void parseCommandLineArguments(final String[] args) {
         try {
             final JCommander jc = new JCommander(this);
             jc.parse(args);
@@ -567,7 +565,7 @@ public class XmlSecToolCommandLineArguments {
      * @param out location where to print the output
      */
     // Checkstyle: MethodLength OFF
-    public void printHelp(PrintStream out) {
+    public void printHelp(final PrintStream out) {
         out.println("XML Security Tool");
         out.println("Provides a command line interface for schema validating, signing, " +
                 "and signature validating an XML file.");
@@ -742,7 +740,7 @@ public class XmlSecToolCommandLineArguments {
      * 
      * @param error the error message
      */
-    private void errorAndExit(String error) {
+    private void errorAndExit(final String error) {
         System.err.println(error);
         System.err.flush();
         System.out.println();

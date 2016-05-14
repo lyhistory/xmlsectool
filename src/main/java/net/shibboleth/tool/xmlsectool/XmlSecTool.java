@@ -138,8 +138,8 @@ public final class XmlSecTool {
     /**
      * @param args
      */
-    public static void main(String[] args) {
-        XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
+    public static void main(final String[] args) {
+        final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
         cli.parseCommandLineArguments(args);
 
         if (cli.doHelp()) {
@@ -152,7 +152,7 @@ public final class XmlSecTool {
             if (cli.getBlacklist().getDigestBlacklist().isEmpty()) {
                 System.out.println("   blacklist is empty");
             } else {
-                for (String uri: cli.getBlacklist().getDigestBlacklist()) {
+                for (final String uri: cli.getBlacklist().getDigestBlacklist()) {
                     System.out.println("   " + uri);
                 }
             }
@@ -161,7 +161,7 @@ public final class XmlSecTool {
             if (cli.getBlacklist().getSignatureBlacklist().isEmpty()) {
                 System.out.println("   blacklist is empty");
             } else {
-                for (String uri: cli.getBlacklist().getSignatureBlacklist()) {
+                for (final String uri: cli.getBlacklist().getSignatureBlacklist()) {
                     System.out.println("   " + uri);
                 }
             }
@@ -179,7 +179,7 @@ public final class XmlSecTool {
         }
 
         try {
-            Document xml = parseXML(cli);
+            final Document xml = parseXML(cli);
 
             if (cli.doSchemaValidation()) {
                 schemaValidate(cli, xml);
@@ -210,18 +210,18 @@ public final class XmlSecTool {
      * 
      * @return the parsed DOM document
      */
-    protected static Document parseXML(XmlSecToolCommandLineArguments cli) {
-        InputStream xmlInputStream;
+    protected static Document parseXML(final XmlSecToolCommandLineArguments cli) {
+        final InputStream xmlInputStream;
         if (cli.getInputFile() != null) {
             xmlInputStream = getXmlInputStreamFromFile(cli);
         } else {
             xmlInputStream = getXmlInputStreamFromUrl(cli);
         }
 
-        DocumentBuilder xmlParser = getParser(cli);
+        final DocumentBuilder xmlParser = getParser(cli);
         try {
             log.debug("Parsing XML input stream");
-            Document xmlDoc = xmlParser.parse(xmlInputStream);
+            final Document xmlDoc = xmlParser.parse(xmlInputStream);
             log.info("XML document parsed and is well-formed.");
             return xmlDoc;
         } catch (IOException e) {
@@ -242,10 +242,10 @@ public final class XmlSecTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromFile(XmlSecToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromFile(final XmlSecToolCommandLineArguments cli) {
         try {
             log.info("Reading XML document from file '{}'", cli.getInputFile());
-            File inputFile = new File(cli.getInputFile());
+            final File inputFile = new File(cli.getInputFile());
             if (!inputFile.exists()) {
                 log.error("Input file '{}' does not exist", cli.getInputFile());
                 System.exit(RC_IO);
@@ -289,9 +289,9 @@ public final class XmlSecTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromUrl(XmlSecToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromUrl(final XmlSecToolCommandLineArguments cli) {
         log.info("Reading XML document from URL '{}'", cli.getInputUrl());
-        HttpClientBuilder httpClientBuilder = new HttpClientBuilder();
+        final HttpClientBuilder httpClientBuilder = new HttpClientBuilder();
         httpClientBuilder.setConnectionDisregardTLSCertificate(true);
         if (cli.getHttpProxy() != null) {
             httpClientBuilder.setConnectionProxyHost(cli.getHttpProxy());
@@ -299,10 +299,10 @@ public final class XmlSecTool {
             httpClientBuilder.setConnectionProxyUsername(cli.getHttpProxyUsername());
             httpClientBuilder.setConnectionProxyPassword(cli.getHttpProxyPassword());
         }
-        HttpGet getMethod = new HttpGet(cli.getInputUrl());
+        final HttpGet getMethod = new HttpGet(cli.getInputUrl());
         getMethod.setHeader("Accept-Encoding", "gzip,deflate");
         try {
-            HttpClient httpClient = httpClientBuilder.buildClient();
+            final HttpClient httpClient = httpClientBuilder.buildClient();
             final HttpResponse response = httpClient.execute(getMethod);
             final int status = response.getStatusLine().getStatusCode();
             if (status != 200) {
@@ -311,7 +311,7 @@ public final class XmlSecTool {
                 System.exit(RC_IO);
             }
             InputStream ins = response.getEntity().getContent();
-            Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
+            final Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
             if (contentEncodingHeader != null) {
                 String contentEncoding = contentEncodingHeader.getValue();
                 if ("deflate".equalsIgnoreCase(contentEncoding)) {
@@ -344,9 +344,9 @@ public final class XmlSecTool {
      * 
      * @return the DOM parser
      */
-    protected static DocumentBuilder getParser(XmlSecToolCommandLineArguments cli) {
+    protected static DocumentBuilder getParser(final XmlSecToolCommandLineArguments cli) {
         log.debug("Building DOM parser");
-        DocumentBuilderFactory newFactory = DocumentBuilderFactory.newInstance();
+        final DocumentBuilderFactory newFactory = DocumentBuilderFactory.newInstance();
         newFactory.setCoalescing(false);
         newFactory.setExpandEntityReferences(true);
         newFactory.setIgnoringComments(false);
@@ -404,12 +404,10 @@ public final class XmlSecTool {
      * @param cli command line arguments
      * @param xml document to be signed
      */
-    protected static void sign(XmlSecToolCommandLineArguments cli, Document xml) {
+    protected static void sign(final XmlSecToolCommandLineArguments cli, final Document xml) {
         log.debug("Preparing to sign document");
-        Element documentRoot = xml.getDocumentElement();
-        Element signatureElement;
-
-        signatureElement = getSignatureElement(xml);
+        final Element documentRoot = xml.getDocumentElement();
+        Element signatureElement = getSignatureElement(xml);
         if (signatureElement != null) {
             log.error("XML document is already signed");
             System.exit(RC_SIG);
@@ -422,8 +420,8 @@ public final class XmlSecTool {
          *    * for RSA credentials, use an algorithm dependent on the digest algorithm chosen
          *    * fall back to a signature algorithm based on the signing credential type.
          */
-        BasicX509Credential signingCredential = getCredential(cli);
-        SignatureSigningConfiguration securityConfig =
+        final BasicX509Credential signingCredential = getCredential(cli);
+        final SignatureSigningConfiguration securityConfig =
                 SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration();
         String signatureAlgorithm = cli.getSignatureAlgorithm();
         if (signatureAlgorithm == null) {
@@ -448,8 +446,8 @@ public final class XmlSecTool {
             }
             log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
         }
-        boolean hmac = AlgorithmSupport.isHMAC(signatureAlgorithm);
-        Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
+        final boolean hmac = AlgorithmSupport.isHMAC(signatureAlgorithm);
+        final Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
         
         /*
          * Determine the digest algorithm:
@@ -465,7 +463,7 @@ public final class XmlSecTool {
         String c14nAlgorithm = SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS;
 
         try {
-            XMLSignature signature = null;
+            final XMLSignature signature;
             if (hmac) {
                 signature = new XMLSignature(xml, "#", signatureAlgorithm, hmacOutputLength, c14nAlgorithm);
             } else {
@@ -474,7 +472,7 @@ public final class XmlSecTool {
 
             populateKeyInfo(xml, signature.getKeyInfo(), signingCredential);
 
-            Transforms contentTransforms = new Transforms(xml);
+            final Transforms contentTransforms = new Transforms(xml);
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_ENVELOPED_SIGNATURE);
             contentTransforms.addTransform(SignatureConstants.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
             signature.addDocument(getSignatureReferenceUri(cli, documentRoot), contentTransforms,
@@ -499,27 +497,27 @@ public final class XmlSecTool {
      * @param keyInfo the KeyInfo to be populated
      * @param credential the credential
      */
-    protected static void populateKeyInfo(Document doc, KeyInfo keyInfo, BasicX509Credential credential) {
-        KeyName keyName;
+    protected static void populateKeyInfo(final Document doc, final KeyInfo keyInfo,
+            final BasicX509Credential credential) {
         if (credential.getKeyNames() != null) {
-            for (String name : credential.getKeyNames()) {
-                keyName = new KeyName(doc, name);
+            for (final String name : credential.getKeyNames()) {
+                final KeyName keyName = new KeyName(doc, name);
                 keyInfo.add(keyName);
             }
         }
 
         keyInfo.add(credential.getPublicKey());
 
-        X509Data x509Data = new X509Data(doc);
+        final X509Data x509Data = new X509Data(doc);
         keyInfo.add(x509Data);
 
         try {
-            for (X509Certificate cert : credential.getEntityCertificateChain()) {
+            for (final X509Certificate cert : credential.getEntityCertificateChain()) {
                 x509Data.addCertificate(cert);
             }
 
             if (credential.getCRLs() != null) {
-                for (X509CRL crl : credential.getCRLs()) {
+                for (final X509CRL crl : credential.getCRLs()) {
                     x509Data.addCRL(crl.getEncoded());
                 }
             }
@@ -540,10 +538,11 @@ public final class XmlSecTool {
      * 
      * @return the signature reference URI, never null
      */
-    protected static String getSignatureReferenceUri(XmlSecToolCommandLineArguments cli, Element rootElement) {
+    protected static String getSignatureReferenceUri(final XmlSecToolCommandLineArguments cli,
+            final Element rootElement) {
         String reference = "";
         if (cli.getReferenceIdAttributeName() != null) {
-            Attr referenceAttribute =
+            final Attr referenceAttribute =
                     (Attr) rootElement.getAttributes().getNamedItem(cli.getReferenceIdAttributeName());
             if (referenceAttribute != null) {
                 // Mark the reference attribute as a valid ID attribute
@@ -565,7 +564,8 @@ public final class XmlSecTool {
      * @param root element to which the signature will be added as a child
      * @param signature signature to be added to the document's root element
      */
-    protected static void addSignatureELement(XmlSecToolCommandLineArguments cli, Element root, Element signature) {
+    protected static void addSignatureELement(final XmlSecToolCommandLineArguments cli,
+            final Element root, final Element signature) {
         if ("FIRST".equalsIgnoreCase(cli.getSignaturePosition()) || cli.getSignaturePosition() == null) {
             root.insertBefore(signature, root.getFirstChild());
             return;
@@ -577,8 +577,8 @@ public final class XmlSecTool {
         }
 
         try {
-            NodeList children = root.getChildNodes();
-            int position = Integer.parseInt(cli.getSignaturePosition());
+            final NodeList children = root.getChildNodes();
+            final int position = Integer.parseInt(cli.getSignaturePosition());
             boolean signatureInserted = false;
             if (children.getLength() > position) {
                 int elementCount = 0;
@@ -644,7 +644,7 @@ public final class XmlSecTool {
          */
         NamedNodeMap attributes = docElement.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
-            Attr attribute = (Attr) attributes.item(i);
+            final Attr attribute = (Attr) attributes.item(i);
             if (id.equals(attribute.getValue())) {
                 log.debug("marking ID attribute {}", attribute.getName());
                 docElement.setIdAttributeNode(attribute, true);
@@ -666,8 +666,9 @@ public final class XmlSecTool {
      * @param cli command line argument
      * @param xmlDocument document whose signature will be validated
      */
-    protected static void verifySignature(XmlSecToolCommandLineArguments cli, Document xmlDocument) {
-        Element signatureElement = getSignatureElement(xmlDocument);
+    protected static void verifySignature(final XmlSecToolCommandLineArguments cli,
+            final Document xmlDocument) {
+        final Element signatureElement = getSignatureElement(xmlDocument);
         if (signatureElement == null) {
             if (cli.isSignatureRequired()) {
                 log.error("Signature required but XML document is not signed");
@@ -698,7 +699,7 @@ public final class XmlSecTool {
         
         // check reference digest algorithm against blacklist
         try {
-            String alg = ref.getMessageDigestAlgorithm().getAlgorithmURI();
+            final String alg = ref.getMessageDigestAlgorithm().getAlgorithmURI();
             log.debug("blacklist checking digest {}", alg);
             if (cli.getBlacklist().isBlacklistedDigest(alg)) {
                 log.error("Digest algorithm {} is blacklisted", alg);
@@ -710,14 +711,14 @@ public final class XmlSecTool {
         }
         
         // check signature algorithm against blacklist
-        String alg = signature.getSignedInfo().getSignatureMethodURI();
+        final String alg = signature.getSignedInfo().getSignatureMethodURI();
         log.debug("blacklist checking signature method {}", alg);
         if (cli.getBlacklist().isBlacklistedSignature(alg)) {
             log.error("Signature algorithm {} is blacklisted", alg);
             System.exit(RC_SIG);
         }        
 
-        Key verificationKey = CredentialSupport.extractVerificationKey(getCredential(cli));
+        final Key verificationKey = CredentialSupport.extractVerificationKey(getCredential(cli));
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBase64String(verificationKey.getEncoded()));
         try {
             if (signature.checkSignatureValue(verificationKey)) {
@@ -750,7 +751,7 @@ public final class XmlSecTool {
      * @return the extracted reference
      */
     protected static Reference extractReference(final XMLSignature signature) {
-        int numReferences = signature.getSignedInfo().getLength();
+        final int numReferences = signature.getSignedInfo().getLength();
         if (numReferences != 1) {
             log.error("Signature SignedInfo had invalid number of References: " + numReferences);
             System.exit(RC_SIG);
@@ -780,7 +781,7 @@ public final class XmlSecTool {
      * @param xmlDocument current XML document
      * @param ref reference to be verified
      */
-    protected static void validateSignatureReference(Document xmlDocument, Reference ref) {
+    protected static void validateSignatureReference(final Document xmlDocument, final Reference ref) {
         validateSignatureReferenceUri(xmlDocument, ref);
         validateSignatureTransforms(ref);
     }
@@ -792,7 +793,7 @@ public final class XmlSecTool {
      * @param xmlDocument the signed document
      * @param reference the reference to be validated
      */
-    protected static void validateSignatureReferenceUri(Document xmlDocument, Reference reference) {
+    protected static void validateSignatureReferenceUri(final Document xmlDocument, final Reference reference) {
         final ReferenceData refData = reference.getReferenceData();
         if (refData instanceof ReferenceSubTreeData) {
             final ReferenceSubTreeData subTree = (ReferenceSubTreeData) refData;
@@ -802,7 +803,7 @@ public final class XmlSecTool {
                 resolvedSignedNode = ((Document)root).getDocumentElement();
             }
 
-            Element expectedSignedNode = xmlDocument.getDocumentElement();
+            final Element expectedSignedNode = xmlDocument.getDocumentElement();
 
             if (!expectedSignedNode.isSameNode(resolvedSignedNode)) {
                 log.error("Signature Reference URI \"" + reference.getURI()
@@ -824,7 +825,7 @@ public final class XmlSecTool {
      * 
      * @param reference the Signature reference containing the transforms to evaluate
      */
-    protected static void validateSignatureTransforms(Reference reference) {
+    protected static void validateSignatureTransforms(final Reference reference) {
         Transforms transforms = null;
         try {
             transforms = reference.getTransforms();
@@ -838,7 +839,7 @@ public final class XmlSecTool {
             System.exit(RC_SIG);
         }
 
-        int numTransforms = transforms.getLength();
+        final int numTransforms = transforms.getLength();
         if (numTransforms > 2) {
             log.error("Invalid number of Transforms was present: " + numTransforms);
             System.exit(RC_SIG);
@@ -853,7 +854,7 @@ public final class XmlSecTool {
                 log.error("Error obtaining transform instance", e);
                 System.exit(RC_SIG);
             }
-            String uri = transform.getURI();
+            final String uri = transform.getURI();
             if (Transforms.TRANSFORM_ENVELOPED_SIGNATURE.equals(uri)) {
                 log.debug("Saw Enveloped signature transform");
                 sawEnveloped = true;
@@ -879,8 +880,8 @@ public final class XmlSecTool {
      * 
      * @return the signature element, or null
      */
-    protected static Element getSignatureElement(Document xmlDoc) {
-        List<Element> sigElements =
+    protected static Element getSignatureElement(final Document xmlDoc) {
+        final List<Element> sigElements =
                 ElementSupport
                         .getChildElementsByTagNameNS(xmlDoc.getDocumentElement(),
                                 Signature.DEFAULT_ELEMENT_NAME.getNamespaceURI(),
@@ -905,7 +906,7 @@ public final class XmlSecTool {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getCredential(XmlSecToolCommandLineArguments cli) {
+    protected static BasicX509Credential getCredential(final XmlSecToolCommandLineArguments cli) {
         BasicX509Credential credential = null;
         if (cli.getCertificate() != null) {
             try {
@@ -960,16 +961,16 @@ public final class XmlSecTool {
      * 
      * @return collection of CRLs
      */
-    protected static Collection<X509CRL> getCRLs(XmlSecToolCommandLineArguments cli) {
-        List<String> keyInfoCrls = cli.getKeyInfoCrls();
+    protected static Collection<X509CRL> getCRLs(final XmlSecToolCommandLineArguments cli) {
+        final List<String> keyInfoCrls = cli.getKeyInfoCrls();
         if (keyInfoCrls == null || keyInfoCrls.isEmpty()) {
             return Collections.emptyList();
         }
 
-        ArrayList<X509CRL> crls = new ArrayList<X509CRL>();
+        final ArrayList<X509CRL> crls = new ArrayList<X509CRL>();
         File crlFile = null;
         try {
-            for (String crlFilePath : keyInfoCrls) {
+            for (final String crlFilePath : keyInfoCrls) {
                 crlFile = new File(crlFilePath);
                 if (!crlFile.exists() || !crlFile.canRead()) {
                     log.error("Unable to read CRL file " + crlFilePath);
@@ -991,10 +992,10 @@ public final class XmlSecTool {
      * @param cli command line arguments
      * @param xml the XML element to output
      */
-    protected static void writeDocument(XmlSecToolCommandLineArguments cli, Node xml) {
+    protected static void writeDocument(final XmlSecToolCommandLineArguments cli, final Node xml) {
         try {
             log.debug("Attempting to write output to file {}", cli.getOutputFile());
-            File file = new File(cli.getOutputFile());
+            final File file = new File(cli.getOutputFile());
             if (file.exists() && file.isDirectory()) {
                 log.error("Output file " + cli.getOutputFile() + " is a directory");
                 System.exit(RC_IO);
@@ -1021,8 +1022,8 @@ public final class XmlSecTool {
 
             log.debug("Writing XML document to output file {}", cli.getOutputFile());
             try {
-                TransformerFactory tfac = TransformerFactory.newInstance();
-                Transformer serializer = tfac.newTransformer();
+                final TransformerFactory tfac = TransformerFactory.newInstance();
+                final Transformer serializer = tfac.newTransformer();
                 serializer.setOutputProperty("encoding", "UTF-8");
                 serializer.transform(new DOMSource(xml), new StreamResult(out));
             } catch (TransformerException e) {
@@ -1043,7 +1044,7 @@ public final class XmlSecTool {
      * 
      * @param cli command line arguments
      */
-    protected static void initLogging(XmlSecToolCommandLineArguments cli) {
+    protected static void initLogging(final XmlSecToolCommandLineArguments cli) {
         if (cli.getLoggingConfiguration() != null) {
             System.setProperty("logback.configurationFile", cli.getLoggingConfiguration());
         } else if (cli.doVerboseOutput()) {

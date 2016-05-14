@@ -84,7 +84,7 @@ public class SchemaValidator {
      * @param schemaLanguage schema language
      * @return the file name extension associated with the schema language
      */
-    private String schemaFileExtension(@Nonnull SchemaLanguage schemaLanguage) {
+    private String schemaFileExtension(@Nonnull final SchemaLanguage schemaLanguage) {
         switch (schemaLanguage) {
             case XML:
                 return ".xsd";

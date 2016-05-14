@@ -60,7 +60,7 @@ public class Blacklist {
      * 
      * @param uri algorithm URI to blacklist
      */
-    private void addDigestAlgorithm(String uri) {
+    private void addDigestAlgorithm(final String uri) {
         digestBlacklist.add(uri);
     }
     
@@ -69,7 +69,7 @@ public class Blacklist {
      * 
      * @param uri algorithm URI to whitelist
      */
-    private void removeDigestAlgorithm(String uri) {
+    private void removeDigestAlgorithm(final String uri) {
         digestBlacklist.remove(uri);
     }
 
@@ -78,7 +78,7 @@ public class Blacklist {
      * 
      * @param uri algorithm URI to blacklist
      */
-    private void addSignatureAlgorithm(String uri) {
+    private void addSignatureAlgorithm(final String uri) {
         signatureBlacklist.add(uri);
     }
     
@@ -87,7 +87,7 @@ public class Blacklist {
      * 
      * @param uri algorithm URI to whitelist
      */
-    private void removeSignatureAlgorithm(String uri) {
+    private void removeSignatureAlgorithm(final String uri) {
         signatureBlacklist.remove(uri);
     }
     
@@ -122,7 +122,7 @@ public class Blacklist {
      * @param alg digest algorithm URI to check
      * @return <code>true</code> if the algorithm is blacklisted
      */
-    public boolean isBlacklistedDigest(String alg) {
+    public boolean isBlacklistedDigest(final String alg) {
         return digestBlacklist.contains(alg);
     }
     
@@ -133,7 +133,7 @@ public class Blacklist {
      * @param alg signature algorithm URI to check
      * @return <code>true</code> if the algorithm is blacklisted
      */
-    public boolean isBlacklistedSignature(String alg) {
+    public boolean isBlacklistedSignature(final String alg) {
         return signatureBlacklist.contains(alg);
     }
     

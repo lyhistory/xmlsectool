@@ -145,8 +145,8 @@ public enum DigestChoice {
      * 
      * @return {@link DigestChoice} represented by the name
      */
-    public static DigestChoice find(String name) {
-        for (DigestChoice choice: values()) {
+    public static DigestChoice find(final String name) {
+        for (final DigestChoice choice: values()) {
             if (choice.hasName(name)) {
                 return choice;
             }
