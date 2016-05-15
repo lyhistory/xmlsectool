@@ -20,6 +20,6 @@ Test 3 (invalid schema):
 
     ...xmlsectool.sh --sign --inFile in1.xml --outFile /dev/null \
         --certificate ../rsasign2k.crt --key ../rsasign2k.key \
-        --validateSchema --schemaDirectory bad
+        --validateSchema --schemaDirectory fail
 
 Success is an error reporting that the schema document is itself invalid.

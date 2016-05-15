@@ -25,7 +25,7 @@ Failure will be an exception, either "Signature Reference URI #uk001480 was reso
 
 Success will be obvious, but it is also valuable to re-run with `--verbose` and confirm that we are "`marking ID attribute ID`".
 
-Success is a message confirming verification, and `diff in2.xml out2.tmp` showing no differences.
+Success is a message confirming verification, and `diff in3.xml out3.tmp` showing no differences.
 
 ## Test 4 (verification with empty reference)
 
