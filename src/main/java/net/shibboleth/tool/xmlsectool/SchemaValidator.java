@@ -108,7 +108,7 @@ public class SchemaValidator {
             final File[] schemaFilesOrDirectories,
             final List<File> accumulatedSchemaFiles) {
 
-        Constraint.isNull(lang, "Schema language may not be null");
+        Constraint.isNotNull(lang, "Schema language may not be null");
         
         if (schemaFilesOrDirectories == null || schemaFilesOrDirectories.length == 0) {
             return;
