@@ -175,7 +175,7 @@ public final class XmlSecTool {
             xmlInputStream = getXmlInputStreamFromUrl(cli);
         }
 
-        final DocumentBuilder xmlParser = getParser(cli);
+        final DocumentBuilder xmlParser = getParser();
         try {
             log.debug("Parsing XML input stream");
             final Document xmlDoc = xmlParser.parse(xmlInputStream);
@@ -292,11 +292,9 @@ public final class XmlSecTool {
     /**
      * Constructs a DOM parser used to parse the input XML.
      * 
-     * @param cli command line arguments
-     * 
      * @return the DOM parser
      */
-    protected static DocumentBuilder getParser(final XmlSecToolCommandLineArguments cli) {
+    protected static DocumentBuilder getParser() {
         log.debug("Building DOM parser");
         final DocumentBuilderFactory newFactory = DocumentBuilderFactory.newInstance();
         newFactory.setCoalescing(false);
