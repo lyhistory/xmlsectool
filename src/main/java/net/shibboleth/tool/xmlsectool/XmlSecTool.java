@@ -130,7 +130,7 @@ public final class XmlSecTool {
             }
             
             if (cli.doListBlacklist()) {
-                listBlacklistCommand(cli.getBlacklist());
+                cli.getBlacklist().list(System.out);
                 return;
             }
 
@@ -158,32 +158,6 @@ public final class XmlSecTool {
             log.error("Unknown error", t);
             System.exit(ReturnCode.RC_UNKNOWN.getCode());
         }
-    }
-
-    /**
-     * Perform the --listBlacklist command.
-     * 
-     * @param blacklist blacklist to list
-     */
-    private static void listBlacklistCommand(final Blacklist blacklist) {
-        System.out.println("Digest algorithm blacklist:");
-        if (blacklist.getDigestBlacklist().isEmpty()) {
-            System.out.println("   blacklist is empty");
-        } else {
-            for (final String uri: blacklist.getDigestBlacklist()) {
-                System.out.println("   " + uri);
-            }
-        }
-        System.out.println();
-        System.out.println("Signature algorithm blacklist:");
-        if (blacklist.getSignatureBlacklist().isEmpty()) {
-            System.out.println("   blacklist is empty");
-        } else {
-            for (final String uri: blacklist.getSignatureBlacklist()) {
-                System.out.println("   " + uri);
-            }
-        }
-        System.out.println();
     }
 
     /**

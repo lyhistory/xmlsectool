@@ -17,6 +17,7 @@
 
 package net.shibboleth.tool.xmlsectool;
 
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -161,5 +162,31 @@ public class Blacklist {
     public void clear() {
         digestBlacklist.clear();
         signatureBlacklist.clear();
+    }
+    
+    /**
+     * List out the contents of the blacklist.
+     * 
+     * @param out stream to send the listing to
+     */
+    public void list(final PrintStream out) {
+        out.println("Digest algorithm blacklist:");
+        if (getDigestBlacklist().isEmpty()) {
+            out.println("   blacklist is empty");
+        } else {
+            for (final String uri: getDigestBlacklist()) {
+                out.println("   " + uri);
+            }
+        }
+        out.println();
+        out.println("Signature algorithm blacklist:");
+        if (getSignatureBlacklist().isEmpty()) {
+            out.println("   blacklist is empty");
+        } else {
+            for (final String uri: getSignatureBlacklist()) {
+                out.println("   " + uri);
+            }
+        }
+        out.println();
     }
 }
