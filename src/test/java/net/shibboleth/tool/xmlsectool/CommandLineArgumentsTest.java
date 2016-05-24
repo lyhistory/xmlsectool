@@ -4,7 +4,7 @@ import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class XmlSecToolCommandLineArgumentsTest {
+public class CommandLineArgumentsTest {
 
 	@Test
 	public void xstj34_sign_with_SHA256() throws Exception {
@@ -15,7 +15,7 @@ public class XmlSecToolCommandLineArgumentsTest {
 				"--certificate", "example.crt",
 				"--key", "example.key"
 				};
-		final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
+		final CommandLineArguments cli = new CommandLineArguments();
 		cli.parseCommandLineArguments(args);
 		final DigestChoice digest = cli.getDigest();
 		Assert.assertNotNull(digest);
@@ -31,7 +31,7 @@ public class XmlSecToolCommandLineArgumentsTest {
 				"--certificate", "example.crt",
 				"--key", "example.key"
 				};
-		final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
+		final CommandLineArguments cli = new CommandLineArguments();
 		cli.parseCommandLineArguments(args);
 		final Blacklist blacklist = cli.getBlacklist();
 		Assert.assertTrue(blacklist.isBlacklistedDigest(SignatureConstants.ALGO_ID_DIGEST_SHA1));

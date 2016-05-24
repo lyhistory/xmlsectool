@@ -113,7 +113,7 @@ public final class XmlSecTool {
      */
     public static void main(final String[] args) {
         try {
-            final XmlSecToolCommandLineArguments cli = new XmlSecToolCommandLineArguments();
+            final CommandLineArguments cli = new CommandLineArguments();
             cli.parseCommandLineArguments(args);
             initLogging(cli);
 
@@ -167,7 +167,7 @@ public final class XmlSecTool {
      * 
      * @return the parsed DOM document
      */
-    protected static Document parseXML(final XmlSecToolCommandLineArguments cli) {
+    protected static Document parseXML(final CommandLineArguments cli) {
         final InputStream xmlInputStream;
         if (cli.getInputFile() != null) {
             xmlInputStream = getXmlInputStreamFromFile(cli);
@@ -197,7 +197,7 @@ public final class XmlSecTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromFile(final XmlSecToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromFile(final CommandLineArguments cli) {
         try {
             log.info("Reading XML document from file '{}'", cli.getInputFile());
             final File inputFile = new File(cli.getInputFile());
@@ -242,7 +242,7 @@ public final class XmlSecTool {
      * 
      * @return XML input stream
      */
-    protected static InputStream getXmlInputStreamFromUrl(final XmlSecToolCommandLineArguments cli) {
+    protected static InputStream getXmlInputStreamFromUrl(final CommandLineArguments cli) {
         log.info("Reading XML document from URL '{}'", cli.getInputUrl());
         final HttpClientBuilder httpClientBuilder = new HttpClientBuilder();
         httpClientBuilder.setConnectionDisregardTLSCertificate(true);
@@ -319,7 +319,7 @@ public final class XmlSecTool {
      * @param cli command line arguments
      * @param xml document to validate
      */
-    protected static void schemaValidate(final XmlSecToolCommandLineArguments cli, final Document xml) {
+    protected static void schemaValidate(final CommandLineArguments cli, final Document xml) {
         final SchemaLanguage schemaLanguage = cli.isXsdSchema() ? SchemaLanguage.XML : SchemaLanguage.RELAX;
         final File schemaFileOrDirectory = new File(cli.getSchemaDirectory());
         final SchemaValidator validator;
@@ -350,7 +350,7 @@ public final class XmlSecTool {
      * @param cli command line arguments
      * @param xml document to be signed
      */
-    protected static void sign(final XmlSecToolCommandLineArguments cli, final Document xml) {
+    protected static void sign(final CommandLineArguments cli, final Document xml) {
         log.debug("Preparing to sign document");
         final Element documentRoot = xml.getDocumentElement();
         Element signatureElement = getSignatureElement(xml);
@@ -484,7 +484,7 @@ public final class XmlSecTool {
      * 
      * @return the signature reference URI, never null
      */
-    protected static String getSignatureReferenceUri(final XmlSecToolCommandLineArguments cli,
+    protected static String getSignatureReferenceUri(final CommandLineArguments cli,
             final Element rootElement) {
         String reference = "";
         if (cli.getReferenceIdAttributeName() != null) {
@@ -510,7 +510,7 @@ public final class XmlSecTool {
      * @param root element to which the signature will be added as a child
      * @param signature signature to be added to the document's root element
      */
-    protected static void addSignatureELement(final XmlSecToolCommandLineArguments cli,
+    protected static void addSignatureELement(final CommandLineArguments cli,
             final Element root, final Element signature) {
         if ("FIRST".equalsIgnoreCase(cli.getSignaturePosition()) || cli.getSignaturePosition() == null) {
             root.insertBefore(signature, root.getFirstChild());
@@ -612,7 +612,7 @@ public final class XmlSecTool {
      * @param cli command line argument
      * @param xmlDocument document whose signature will be validated
      */
-    protected static void verifySignature(final XmlSecToolCommandLineArguments cli,
+    protected static void verifySignature(final CommandLineArguments cli,
             final Document xmlDocument) {
         final Element signatureElement = getSignatureElement(xmlDocument);
         if (signatureElement == null) {
@@ -847,7 +847,7 @@ public final class XmlSecTool {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getCredential(final XmlSecToolCommandLineArguments cli) {
+    protected static BasicX509Credential getCredential(final CommandLineArguments cli) {
         final BasicX509Credential credential;
         if (cli.getCertificate() != null) {
             try {
@@ -902,7 +902,7 @@ public final class XmlSecTool {
      * 
      * @return collection of CRLs
      */
-    protected static Collection<X509CRL> getCRLs(final XmlSecToolCommandLineArguments cli) {
+    protected static Collection<X509CRL> getCRLs(final CommandLineArguments cli) {
         final List<String> keyInfoCrls = cli.getKeyInfoCrls();
         if (keyInfoCrls == null || keyInfoCrls.isEmpty()) {
             return Collections.emptyList();
@@ -933,7 +933,7 @@ public final class XmlSecTool {
      * @param cli command line arguments
      * @param xml the XML element to output
      */
-    protected static void writeDocument(final XmlSecToolCommandLineArguments cli, final Node xml) {
+    protected static void writeDocument(final CommandLineArguments cli, final Node xml) {
         try {
             log.debug("Attempting to write output to file {}", cli.getOutputFile());
             final File file = new File(cli.getOutputFile());
@@ -985,7 +985,7 @@ public final class XmlSecTool {
      * 
      * @param cli command line arguments
      */
-    protected static void initLogging(final XmlSecToolCommandLineArguments cli) {
+    protected static void initLogging(final CommandLineArguments cli) {
         if (cli.getLoggingConfiguration() != null) {
             System.setProperty("logback.configurationFile", cli.getLoggingConfiguration());
         } else if (cli.doVerboseOutput()) {

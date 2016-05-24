@@ -25,7 +25,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 /** Command line arguments for the {@link XmlSecTool} command line tool. */
-public class XmlSecToolCommandLineArguments {
+public class CommandLineArguments {
 
     /*
      * Checkstyle: JavadocVariable OFF
