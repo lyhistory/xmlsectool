@@ -42,6 +42,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import javax.annotation.Nonnull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -74,6 +75,7 @@ import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.security.x509.X509Credential;
 import org.opensaml.security.x509.X509Support;
 import org.opensaml.xmlsec.SecurityConfigurationSupport;
 import org.opensaml.xmlsec.SignatureSigningConfiguration;
@@ -144,7 +146,8 @@ public final class XmlSecTool {
             }
 
             if (cli.doSign()) {
-                sign(cli, xml);
+                final X509Credential cred = getCredential(cli);
+                sign(cli, cred, xml);
             }
 
             if (cli.doSignatureVerify()) {
@@ -351,9 +354,11 @@ public final class XmlSecTool {
      * Signs a document.
      * 
      * @param cli command line arguments
+     * @param signingCredential credential to use for signing
      * @param xml document to be signed
      */
-    protected static void sign(final CommandLineArguments cli, final Document xml) {
+    protected static void sign(@Nonnull final CommandLineArguments cli,
+            @Nonnull final X509Credential signingCredential, @Nonnull final Document xml) {
         log.debug("Preparing to sign document");
         final Element documentRoot = xml.getDocumentElement();
         Element signatureElement = getSignatureElement(xml);
@@ -369,7 +374,6 @@ public final class XmlSecTool {
          *    * for RSA credentials, use an algorithm dependent on the digest algorithm chosen
          *    * fall back to a signature algorithm based on the signing credential type.
          */
-        final BasicX509Credential signingCredential = getCredential(cli);
         final SignatureSigningConfiguration securityConfig =
                 SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration();
         String signatureAlgorithm = cli.getSignatureAlgorithm();
@@ -447,7 +451,7 @@ public final class XmlSecTool {
      * @param credential the credential
      */
     protected static void populateKeyInfo(final Document doc, final KeyInfo keyInfo,
-            final BasicX509Credential credential) {
+            final X509Credential credential) {
         if (credential.getKeyNames() != null) {
             for (final String name : credential.getKeyNames()) {
                 final KeyName keyName = new KeyName(doc, name);
@@ -863,7 +867,7 @@ public final class XmlSecTool {
      * 
      * @return the credentials
      */
-    protected static BasicX509Credential getCredential(final CommandLineArguments cli) {
+    protected static X509Credential getCredential(final CommandLineArguments cli) {
         final BasicX509Credential credential;
         if (cli.getCertificate() != null) {
             try {

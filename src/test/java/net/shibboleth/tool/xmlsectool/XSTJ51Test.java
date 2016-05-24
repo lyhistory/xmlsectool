@@ -8,6 +8,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.KeyValue;
 import org.testng.Assert;
@@ -29,6 +30,11 @@ public class XSTJ51Test extends BaseTest {
         // acquire an Elliptic Curve credential to sign with
         final File certFile = classRelativeFile("cert.crt");
         final File keyFile = classRelativeFile("key.key");
+        final X509Credential cred =
+                CredentialHelper.getFileBasedCredentials(keyFile.toString(), null, certFile.toString());
+        final PublicKey pk = cred.getPublicKey();
+        Assert.assertEquals(pk.getAlgorithm(), "EC");
+        Assert.assertTrue(pk instanceof java.security.interfaces.ECPublicKey);
 
         // build command-line arguments
         final String[] args = {
@@ -44,16 +50,12 @@ public class XSTJ51Test extends BaseTest {
         InitializationService.initialize();
 
         // check that the credential is of the right kind
-        final BasicX509Credential cred = XmlSecTool.getCredential(cli);
-        final PublicKey pk = cred.getPublicKey();
-        Assert.assertEquals(pk.getAlgorithm(), "EC");
-        Assert.assertTrue(pk instanceof java.security.interfaces.ECPublicKey);
 
         // acquire a document to sign
         final Document xml = readXMLDocument("in.xml");
         
         // perform signature operation
-        XmlSecTool.sign(cli,  xml);
+        XmlSecTool.sign(cli, cred, xml);
         
         // verify the signature using our own code for consistency
         XmlSecTool.verifySignature(cli, xml);
