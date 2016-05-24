@@ -26,10 +26,13 @@ import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyException;
+import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -379,7 +382,7 @@ public final class XmlSecTool {
                 signatureAlgorithm = cli.getDigest().getEcdsaAlgorithm();
             } else {
                 /*
-                 * Not RSA, not EC, so probably some kind of symmetric algorithm.
+                 * Not RSA, not EC, so probably some kind of symmetric algorithm or original DSA.
                  * 
                  * Previously handled this way:
                  * 
@@ -452,7 +455,20 @@ public final class XmlSecTool {
             }
         }
 
-        keyInfo.add(credential.getPublicKey());
+        /*
+         * XSTJ-51: Santuario doesn't handle adding KeyValue elements correctly
+         * for anything other than the DSA and RSA cases. If you hand it anything else,
+         * it generates an empty and therefore schema-invalid KeyValue.
+         * 
+         * Avoid this by only adding the public key to the KeyInfo if we know that
+         * Santuario will do the right thing.
+         */
+        final PublicKey pk = credential.getPublicKey();
+        if (pk instanceof RSAPublicKey || pk instanceof DSAPublicKey) {
+            keyInfo.add(pk);
+        } else {
+            log.debug("not adding KeyValue for unsupported credential of type " + pk.getAlgorithm());
+        }
 
         final X509Data x509Data = new X509Data(doc);
         keyInfo.add(x509Data);
