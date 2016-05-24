@@ -622,7 +622,7 @@ public final class XmlSecTool {
         log.debug("XML document contained Signature element\n{}", SerializeSupport.prettyPrintXML(signatureElement));
 
         log.debug("Creating XML security library XMLSignature object");
-        XMLSignature signature = null;
+        final XMLSignature signature;
         try {
             signature = new XMLSignature(signatureElement, "");
         } catch (XMLSecurityException e) {
@@ -698,7 +698,7 @@ public final class XmlSecTool {
             throw new Terminator(ReturnCode.RC_SIG);
         }
 
-        Reference ref = null;
+        final Reference ref;
         try {
             ref = signature.getSignedInfo().item(0);
         } catch (XMLSecurityException e) {
