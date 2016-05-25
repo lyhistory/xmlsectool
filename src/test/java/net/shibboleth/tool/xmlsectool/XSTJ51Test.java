@@ -16,10 +16,10 @@ import org.w3c.dom.Element;
 import net.shibboleth.utilities.java.support.xml.ElementSupport;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 
-public class XSTJ51 extends BaseTest {
+public class XSTJ51Test extends BaseTest {
 
-    XSTJ51() {
-        super(XSTJ51.class);
+    XSTJ51Test() {
+        super(XSTJ51Test.class);
     }
     
     @Test

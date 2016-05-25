@@ -68,11 +68,13 @@ public abstract class BaseTest {
      * Converts the "."-separated name of a class or package into an
      * absolute path.
      * 
+     * Names ending with "Test" have that value stripped before use.
+     * 
      * @param name name to be converted
      * @return path to resources associated with the name
      */
     private String nameToPath(final String name) {
-        return "/" + name.replace('.', '/');
+        return "/" + name.replace('.', '/').replaceAll("Test$", "");
     }
         
     /**
