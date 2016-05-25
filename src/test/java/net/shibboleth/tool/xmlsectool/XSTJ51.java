@@ -39,8 +39,6 @@ public class XSTJ51 extends BaseTest {
         cli.parseCommandLineArguments(args);
         XmlSecTool.initLogging(cli);
 
-        // check that the credential is of the right kind
-
         // acquire a document to sign
         final Document xml = readXMLDocument("in.xml");
         

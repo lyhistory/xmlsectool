@@ -369,37 +369,12 @@ public final class XmlSecTool {
         }
 
         /*
-         * Determine the signature algorithm:
-         * 
-         *    * if the CLI signatureAlgorithm has been used, it takes precedence.
-         *    * for RSA credentials, use an algorithm dependent on the digest algorithm chosen
-         *    * fall back to a signature algorithm based on the signing credential type.
+         * Determine the signature algorithm to use.
          */
+        final String signatureAlgorithm = determineSignatureAlgorithm(cli, signingCredential);
+        log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
         final SignatureSigningConfiguration securityConfig =
                 SecurityConfigurationSupport.getGlobalSignatureSigningConfiguration();
-        String signatureAlgorithm = cli.getSignatureAlgorithm();
-        if (signatureAlgorithm == null) {
-            final String credentialAlgorithm = signingCredential.getPublicKey().getAlgorithm();
-            log.debug("credential public key algorithm is {}", credentialAlgorithm);
-            if ("RSA".equals(credentialAlgorithm)) {
-                signatureAlgorithm = cli.getDigest().getRsaAlgorithm();
-            } else if ("EC".equals(credentialAlgorithm)) {
-                signatureAlgorithm = cli.getDigest().getEcdsaAlgorithm();
-            } else {
-                /*
-                 * Not RSA, not EC, so probably some kind of symmetric algorithm or original DSA.
-                 * 
-                 * Previously handled this way:
-                 * 
-                 * signatureAlgorithm = securityConfig.getSignatureAlgorithmURI(signingCredential);
-                 * 
-                 * For now, just refuse to deal with it.
-                 */
-                log.error("unimplemented signing credential type: {}", credentialAlgorithm);
-                throw new Terminator(ReturnCode.RC_SIG);
-            }
-            log.debug("signature algorithm {} selected from credential+digest", signatureAlgorithm);
-        }
         final boolean hmac = AlgorithmSupport.isHMAC(signatureAlgorithm);
         final Integer hmacOutputLength = securityConfig.getSignatureHMACOutputLength();
         
@@ -414,7 +389,7 @@ public final class XmlSecTool {
             digestAlgorithm = cli.getDigest().getDigestAlgorithm();
         }
         
-        String c14nAlgorithm = SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS;
+        final String c14nAlgorithm = SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS;
 
         try {
             final XMLSignature signature;
@@ -441,6 +416,44 @@ public final class XmlSecTool {
         } catch (XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
             throw new Terminator(ReturnCode.RC_SIG);
+        }
+    }
+    
+    /**
+     * Determine the signature algorithm to use.
+     * 
+     * <ul>
+     * <li>if the CLI signatureAlgorithm has been used, it takes precedence.
+     * <li>for RSA or ECDSA credentials, use an algorithm dependent on the digest algorithm chosen
+     * <li>for DSA, always use DSA + SHA-1
+     * </ul>
+     * 
+     * @param cli command line arguments
+     * @param signingCredential credential to use for signing
+     * @return algorithm URI as a {@link String}
+     */
+    protected static String determineSignatureAlgorithm(@Nonnull final CommandLineArguments cli,
+            @Nonnull final X509Credential signingCredential) {
+        
+        if (cli.getSignatureAlgorithm() != null) {
+            return cli.getSignatureAlgorithm();
+        }
+
+        final String credentialAlgorithm = signingCredential.getPublicKey().getAlgorithm();
+        log.debug("credential public key algorithm is {}", credentialAlgorithm);
+        switch (credentialAlgorithm) {
+            case "RSA":
+                return cli.getDigest().getRsaAlgorithm();
+                
+            case "EC":
+                return cli.getDigest().getEcdsaAlgorithm();
+                
+            case "DSA":
+                return SignatureConstants.ALGO_ID_SIGNATURE_DSA_SHA1;
+                
+            default:
+                log.error("unimplemented signing credential type: {}", credentialAlgorithm);
+                throw new Terminator(ReturnCode.RC_SIG);
         }
     }
 

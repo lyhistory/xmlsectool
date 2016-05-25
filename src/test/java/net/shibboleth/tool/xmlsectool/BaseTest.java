@@ -9,15 +9,20 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.MissingResourceException;
 
+import javax.annotation.Nonnull;
+
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.security.x509.X509Credential;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
@@ -212,6 +217,39 @@ public abstract class BaseTest {
         }
     }
 
+    // *******************************
+    // ***                         ***
+    // ***   S I G N A T U R E S   ***
+    // ***                         ***
+    // *******************************
+
+    /**
+     * Set all SignatureValue elements to have the given value.
+     * 
+     * This is useful for nondeterministic signature methods such as DSA.
+     * 
+     * @param root root DOM {@link Element} below which values should be replaced
+     * @param value new value to place into all SignatureValue elements
+     */
+    protected void zapSignatureValues(@Nonnull final Element root, @Nonnull final String value) {
+        final NodeList nodes = root.getElementsByTagNameNS(SignatureConstants.XMLSIG_NS, "SignatureValue");
+        for (int index=0 ; index<nodes.getLength(); index++) {
+            final Node node = nodes.item(index);
+            node.setTextContent(value);
+        }
+    }
+
+    /**
+     * Set all SignatureValues elements to have the value "zap".
+     * 
+     * This is useful for nondeterministic signature methods such as DSA.
+     * 
+     * @param doc {@link Document} to operate on
+     */
+    protected void zapSignatureValues(@Nonnull final Document doc) {
+        zapSignatureValues(doc.getDocumentElement(), "zap");
+    }
+    
     // *********************************
     // ***                           ***
     // ***   C R E D E N T I A L S   ***
