@@ -38,7 +38,7 @@ public class XSTJ59Test extends BaseTest {
                 };
         final CommandLineArguments cli = new CommandLineArguments();
         cli.parseCommandLineArguments(args);
-        XmlSecTool.initLogging(cli);
+        XMLSecTool.initLogging(cli);
 
         // check that the credential is of the right kind
         final DSAPublicKey key = (DSAPublicKey)cred.getPublicKey();
@@ -48,10 +48,10 @@ public class XSTJ59Test extends BaseTest {
         final Document xml = readXMLDocument("in.xml");
         
         // perform signature operation
-        XmlSecTool.sign(cli, cred, xml);
+        XMLSecTool.sign(cli, cred, xml);
         
         // verify the signature using our own code for consistency
-        XmlSecTool.verifySignature(cli, cred, xml);
+        XMLSecTool.verifySignature(cli, cred, xml);
 
         // compare with output from V1.x
         final Document out = readXMLDocument("out1024.xml");

@@ -46,4 +46,4 @@ do
     fi
 done
 
-"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" $JVMOPTS '-Dnet.shibboleth.tool.xmlsectool.XmlSecTool.home='"$LOCATION" 'net.shibboleth.tool.xmlsectool.XmlSecTool' "$@"
+"$JAVACMD" '-Xmx256m' '-classpath' "$LOCALCLASSPATH" $JVMOPTS '-Dnet.shibboleth.tool.xmlsectool.XMLSecTool.home='"$LOCATION" 'net.shibboleth.tool.xmlsectool.XMLSecTool' "$@"

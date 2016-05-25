@@ -24,7 +24,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-/** Command line arguments for the {@link XmlSecTool} command line tool. */
+/** Command line arguments for the {@link XMLSecTool} command line tool. */
 public class CommandLineArguments {
 
     /*

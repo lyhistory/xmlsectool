@@ -37,19 +37,19 @@ public class XSTJ51Test extends BaseTest {
                 };
         final CommandLineArguments cli = new CommandLineArguments();
         cli.parseCommandLineArguments(args);
-        XmlSecTool.initLogging(cli);
+        XMLSecTool.initLogging(cli);
 
         // acquire a document to sign
         final Document xml = readXMLDocument("in.xml");
         
         // perform signature operation
-        XmlSecTool.sign(cli, cred, xml);
+        XMLSecTool.sign(cli, cred, xml);
         
         // verify the signature using our own code for consistency
-        XmlSecTool.verifySignature(cli, cred, xml);
+        XMLSecTool.verifySignature(cli, cred, xml);
 
         // take a careful look at the signature
-        final Element signatureElement = XmlSecTool.getSignatureElement(xml);
+        final Element signatureElement = XMLSecTool.getSignatureElement(xml);
         final Element keyInfoElement = ElementSupport.getFirstChildElement(signatureElement,
                 KeyInfo.DEFAULT_ELEMENT_NAME);
         final List<Element> keyInfoChildren = ElementSupport.getChildElements(keyInfoElement);

@@ -103,13 +103,13 @@ import net.shibboleth.utilities.java.support.xml.SerializeSupport;
  *  A command line tool for checking an XML file for well-formedness and validity as well as
  *  signing and checking signatures.
  */
-public final class XmlSecTool {
+public final class XMLSecTool {
 
     /** Class logger. */
     private static Logger log;
 
     /** Constructor. */
-    private XmlSecTool() {}
+    private XMLSecTool() {}
 
     /**
      * Main command-line entry point.
@@ -1032,6 +1032,6 @@ public final class XmlSecTool {
             System.setProperty("logback.configurationFile", "logger-normal.xml");
         }
 
-        log = LoggerFactory.getLogger(XmlSecTool.class);
+        log = LoggerFactory.getLogger(XMLSecTool.class);
     }
 }
