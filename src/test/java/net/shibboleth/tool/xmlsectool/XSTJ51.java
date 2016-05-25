@@ -1,13 +1,10 @@
 package net.shibboleth.tool.xmlsectool;
 
-import java.io.File;
-import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.util.List;
 
 import javax.xml.transform.dom.DOMSource;
 
-import org.opensaml.core.config.InitializationService;
-import org.opensaml.security.x509.BasicX509Credential;
 import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.KeyValue;
@@ -19,35 +16,28 @@ import org.w3c.dom.Element;
 import net.shibboleth.utilities.java.support.xml.ElementSupport;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 
-public class XSTJ51Test extends BaseTest {
+public class XSTJ51 extends BaseTest {
 
-    XSTJ51Test() {
-        super(XSTJ51Test.class);
+    XSTJ51() {
+        super(XSTJ51.class);
     }
     
     @Test
-    public void testKeyInfo() throws Exception {
+    public void xstj51_KeyInfo() throws Exception {
         // acquire an Elliptic Curve credential to sign with
-        final File certFile = classRelativeFile("cert.crt");
-        final File keyFile = classRelativeFile("key.key");
-        final X509Credential cred =
-                CredentialHelper.getFileBasedCredentials(keyFile.toString(), null, certFile.toString());
-        final PublicKey pk = cred.getPublicKey();
-        Assert.assertEquals(pk.getAlgorithm(), "EC");
-        Assert.assertTrue(pk instanceof java.security.interfaces.ECPublicKey);
+        final X509Credential cred = getSigningCredential("sign", "EC", ECPublicKey.class);
 
         // build command-line arguments
         final String[] args = {
                 "--sign",
                 "--inFile", "in.xml",
                 "--outFile", "out.xml",
-                "--certificate", certFile.toString(),
-                "--key", keyFile.toString()
+                "--certificate", "sign.crt",
+                "--key", "sign.key"
                 };
         final CommandLineArguments cli = new CommandLineArguments();
         cli.parseCommandLineArguments(args);
         XmlSecTool.initLogging(cli);
-        InitializationService.initialize();
 
         // check that the credential is of the right kind
 
@@ -58,7 +48,7 @@ public class XSTJ51Test extends BaseTest {
         XmlSecTool.sign(cli, cred, xml);
         
         // verify the signature using our own code for consistency
-        XmlSecTool.verifySignature(cli, xml);
+        XmlSecTool.verifySignature(cli, cred, xml);
 
         // take a careful look at the signature
         final Element signatureElement = XmlSecTool.getSignatureElement(xml);

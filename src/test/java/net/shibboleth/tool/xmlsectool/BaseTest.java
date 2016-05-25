@@ -4,10 +4,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyException;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.util.MissingResourceException;
 
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.security.x509.X509Credential;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.w3c.dom.Document;
@@ -144,9 +150,11 @@ public abstract class BaseTest {
      * Setup test class. Creates and initializes the parser pool.
      * 
      * @throws ComponentInitializationException if there is a problem initializing the parser pool
+     * @throws InitializationException if OpenSAML initialization fails
      */
     @BeforeClass
-    public void setUp() throws ComponentInitializationException {
+    public void setUp() throws ComponentInitializationException, InitializationException {
+        InitializationService.initialize();
         XMLUnit.setIgnoreWhitespace(true);
 
         parserPool = new BasicParserPool();
@@ -202,5 +210,46 @@ public abstract class BaseTest {
         if (!diff.identical()) {
             org.testng.Assert.fail(diff.toString());
         }
+    }
+
+    // *********************************
+    // ***                           ***
+    // ***   C R E D E N T I A L S   ***
+    // ***                           ***
+    // *********************************
+
+    /**
+     * Acquire a class-local signing credential consisting of a certificate and key.
+     * 
+     * @param which name of the credential to acquire
+     * @return the credential
+     * @throws KeyException if the key cannot be acquired
+     * @throws CertificateException if the certificate cannot be acquired
+     */
+    protected X509Credential getSigningCredential(final String which) throws KeyException, CertificateException {
+        final File certFile = classRelativeFile(which + ".crt");
+        final File keyFile = classRelativeFile(which + ".key");
+        return CredentialHelper.getFileBasedCredentials(keyFile.toString(), null, certFile.toString());
+    }
+    
+    /**
+     * Acquire a class-local signing credential consisting of a certificate and key.
+     * 
+     * Checks that the returned credential has an appropriate public key algorithm and class.
+     * 
+     * @param which name of the credential to acquire
+     * @param algorithm required public key algorithm
+     * @param clazz required public key class or interface
+     * @return the credential
+     * @throws KeyException if the key cannot be acquired
+     * @throws CertificateException if the certificate cannot be acquired
+     */
+    protected X509Credential getSigningCredential(final String which, final String algorithm, final Class<?> clazz)
+        throws KeyException, CertificateException {
+        final X509Credential cred = getSigningCredential(which);
+        final PublicKey pk = cred.getPublicKey();
+        Assert.assertEquals(pk.getAlgorithm(), algorithm);
+        Assert.assertTrue(clazz.isInstance(pk));
+        return cred;
     }
 }

@@ -151,7 +151,8 @@ public final class XmlSecTool {
             }
 
             if (cli.doSignatureVerify()) {
-                verifySignature(cli, xml);
+                final X509Credential cred = getCredential(cli);
+                verifySignature(cli, cred, xml);
             }
 
             if (cli.getOutputFile() != null) {
@@ -630,9 +631,11 @@ public final class XmlSecTool {
      * Verifies that the signature on a document is valid.
      * 
      * @param cli command line argument
+     * @param credential credential to use for validation
      * @param xmlDocument document whose signature will be validated
      */
     protected static void verifySignature(final CommandLineArguments cli,
+            @Nonnull final X509Credential credential,
             final Document xmlDocument) {
         final Element signatureElement = getSignatureElement(xmlDocument);
         if (signatureElement == null) {
@@ -679,7 +682,7 @@ public final class XmlSecTool {
             throw new Terminator(ReturnCode.RC_SIG);
         }        
 
-        final Key verificationKey = CredentialSupport.extractVerificationKey(getCredential(cli));
+        final Key verificationKey = CredentialSupport.extractVerificationKey(credential);
         log.debug("Verifying XML signature with key\n{}", Base64.encodeBase64String(verificationKey.getEncoded()));
         try {
             if (signature.checkSignatureValue(verificationKey)) {
