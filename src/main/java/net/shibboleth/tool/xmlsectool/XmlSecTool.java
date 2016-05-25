@@ -443,10 +443,10 @@ public final class XmlSecTool {
         log.debug("credential public key algorithm is {}", credentialAlgorithm);
         switch (credentialAlgorithm) {
             case "RSA":
-                return cli.getDigest().getRsaAlgorithm();
+                return cli.getDigest().getRSAAlgorithm();
                 
             case "EC":
-                return cli.getDigest().getEcdsaAlgorithm();
+                return cli.getDigest().getECDSAAlgorithm();
                 
             case "DSA":
                 return SignatureConstants.ALGO_ID_SIGNATURE_DSA_SHA1;

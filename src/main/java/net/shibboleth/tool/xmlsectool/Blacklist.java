@@ -100,8 +100,8 @@ public class Blacklist {
      */
     public void addDigest(DigestChoice digestChoice) {
         addDigestAlgorithm(digestChoice.getDigestAlgorithm());
-        addSignatureAlgorithm(digestChoice.getRsaAlgorithm());
-        addSignatureAlgorithm(digestChoice.getEcdsaAlgorithm());
+        addSignatureAlgorithm(digestChoice.getRSAAlgorithm());
+        addSignatureAlgorithm(digestChoice.getECDSAAlgorithm());
     }
     
     /**
@@ -112,8 +112,8 @@ public class Blacklist {
      */
     public void removeDigest(DigestChoice digestChoice) {
         removeDigestAlgorithm(digestChoice.getDigestAlgorithm());
-        removeSignatureAlgorithm(digestChoice.getRsaAlgorithm());
-        removeSignatureAlgorithm(digestChoice.getEcdsaAlgorithm());
+        removeSignatureAlgorithm(digestChoice.getRSAAlgorithm());
+        removeSignatureAlgorithm(digestChoice.getECDSAAlgorithm());
     }
     
     /**

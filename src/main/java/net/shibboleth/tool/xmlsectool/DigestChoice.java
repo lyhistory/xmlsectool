@@ -106,7 +106,7 @@ public enum DigestChoice {
      * 
      * @return algorithm URI
      */
-    public String getRsaAlgorithm() {
+    public String getRSAAlgorithm() {
         return rsaAlgorithm;
     }
     
@@ -115,7 +115,7 @@ public enum DigestChoice {
      * 
      * @return algorithm URI
      */
-    public String getEcdsaAlgorithm() {
+    public String getECDSAAlgorithm() {
         return ecdsaAlgorithm;
     }
     
