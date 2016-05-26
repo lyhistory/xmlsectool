@@ -44,6 +44,12 @@
         </repository>
     </repositories>
 
+    <scm>
+        <connection>scm:git:https://git.shibboleth.net/git/${project.artifactId}</connection>
+        <developerConnection>scm:git:git@git.shibboleth.net:${project.artifactId}</developerConnection>
+        <url>https://git.shibboleth.net/view/?p=${project.artifactId}.git</url>
+    </scm>
+
     <dependencies>
         <!-- Compile dependencies -->
         <dependency>
