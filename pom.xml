@@ -15,7 +15,7 @@
     <version>2.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>XmlSecTool</name>
+    <name>XMLSecTool</name>
     <description>
         A command line tool for checking an XML file for well-formedness and validity as well as
         signing and checking signatures.
