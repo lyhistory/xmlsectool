@@ -1,6 +1,6 @@
-diff -Naur xmlsectool.orig/xmltool.sh xmlsectool/xmltool.sh
---- xmlsectool.orig/xmltool.sh	2011-02-18 16:50:21.000000000 +0100
-+++ xmlsectool/xmltool.sh	2011-02-18 16:49:58.000000000 +0100
+diff -Naur xmlsectool.orig/xmlsectool.sh xmlsectool/xmlsectool.sh
+--- xmlsectool.orig/xmlsectool.sh	2011-02-18 16:50:21.000000000 +0100
++++ xmlsectool/xmlsectool.sh	2011-02-18 16:49:58.000000000 +0100
 @@ -6,8 +6,7 @@
  declare LOCALCLASSPATH
  declare LIBDIR

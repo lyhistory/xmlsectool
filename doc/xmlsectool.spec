@@ -1,16 +1,16 @@
 %define unzip /usr/bin/unzip
-%define scriptname xmltool
+%define scriptname xmlsectool
 Summary: Java command line tool for checking and verifying XML documents
 Name: xmlsectool
-Version: 1.2.0
+Version: 2.0.0
 Release: 1
 Epoch: 0
 License: Apache License 2.0
 Group: System Environment/Libraries
-Source0: http://www.shibboleth.net/downloads/tools/%{name}/%{version}/%{name}-%{version}-bin.zip
+Source0: http://shibboleth.net/downloads/tools/%{name}/%{version}/%{name}-%{version}-bin.zip
 Patch0: xmlsectool.patch
-URL: https://wiki.shibboleth.net/confluence/display/SHIB2/XmlSecTool
-Requires: java
+URL: https://wiki.shibboleth.net/confluence/display/XSTJ/
+Requires: java >= 1.7.0
 BuildRequires: unzip
 BuildArch: noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%(id -u -n)
@@ -25,7 +25,7 @@ It can also create enveloped signatures of an XML document.
 %{unzip} -q $RPM_SOURCE_DIR/%{name}-%{version}-bin.zip
 cd %{name}-%{version}
 
-%patch -p1
+%patch0 -p1
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT
@@ -33,9 +33,8 @@ cd %{name}-%{version}
 install -d %{buildroot}%{_bindir}
 install $RPM_BUILD_DIR/%{name}-%{version}/%{scriptname}.sh %{buildroot}%{_bindir}/%{scriptname}
 
-install -d %{buildroot}%{_javadir}/%{name}/endorsed
+install -d %{buildroot}%{_javadir}/%{name}
 install -m644 $RPM_BUILD_DIR/%{name}-%{version}/lib/*.jar %{buildroot}%{_javadir}/%{name}
-install -m644 $RPM_BUILD_DIR/%{name}-%{version}/lib/endorsed/*.jar %{buildroot}%{_javadir}/%{name}/endorsed
 
 install -d %{buildroot}%{_docdir}/%{name}
 install -m644 $RPM_BUILD_DIR/%{name}-%{version}/doc/* %{buildroot}%{_docdir}/%{name}
@@ -51,6 +50,9 @@ install -m644 $RPM_BUILD_DIR/%{name}-%{version}/doc/* %{buildroot}%{_docdir}/%{n
 %{_javadir}/%{name}/*
 
 %changelog
+* Fri May 27 2016 Ian Young <ian@iay.org.uk> 2.0.0-1
+- update to latest version
+
 * Mon Mar 04 2013 Ian Young <ian@iay.org.uk> 1.2.0-1
 - Import into xmlsectool package, update to latest version.
 
