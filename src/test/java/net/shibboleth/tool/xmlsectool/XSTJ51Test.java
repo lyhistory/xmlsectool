@@ -9,6 +9,8 @@ import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.KeyValue;
 import org.testng.Assert;
+import org.testng.SkipException;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -22,6 +24,13 @@ public class XSTJ51Test extends BaseTest {
         super(XSTJ51Test.class);
     }
     
+    @BeforeMethod
+    protected void conditionalSkip() {
+        if (!canTestECC()) {
+            throw new SkipException("skipping because we don't have a working ECC provider");
+        }        
+    }
+
     @Test
     public void xstj51_KeyInfo() throws Exception {
         // acquire an Elliptic Curve credential to sign with

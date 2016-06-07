@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.security.cert.CertificateException;
 import java.util.MissingResourceException;
 
@@ -14,7 +16,7 @@ import javax.annotation.Nonnull;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.opensaml.core.config.InitializationException;
-import org.opensaml.core.config.InitializationService;
+import org.opensaml.security.SecurityProviderTestSupport;
 import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.testng.Assert;
@@ -161,7 +163,7 @@ public abstract class BaseTest {
      */
     @BeforeClass
     public void setUp() throws ComponentInitializationException, InitializationException {
-        InitializationService.initialize();
+        InitializationSupport.initialize();
         XMLUnit.setIgnoreWhitespace(true);
 
         parserPool = new BasicParserPool();
@@ -250,6 +252,33 @@ public abstract class BaseTest {
      */
     protected void zapSignatureValues(@Nonnull final Document doc) {
         zapSignatureValues(doc.getDocumentElement(), "zap");
+    }
+    
+    /**
+     * Is it worth testing Elliptic Curve signatures?
+     * 
+     * @return <code>true</code> if we can test Elliptic Curve signatures
+     */
+    protected boolean canTestECC() {
+        final Signature ecsig;
+        try {
+            // look for an ECC provider
+            ecsig = Signature.getInstance("SHA256withECDSA");
+        } catch (NoSuchAlgorithmException e) {
+            // if we don't have one at all, we can't test ECC
+            return false;
+        }
+
+        // If we're using something claiming to be SunEC on OpenJDK 7, it may actually be broken
+        // so don't bother with the tests.
+        // Note: test version last to avoid problems with OpenJDK 9 previews.
+        final SecurityProviderTestSupport sup = new SecurityProviderTestSupport();
+        if (ecsig.getProvider().getName().equals(SecurityProviderTestSupport.SUNEC_PROVIDER_NAME) &&
+                sup.isOpenJDK() && sup.getJavaVersion() <= 7) {
+            return false;
+        }
+
+        return true;
     }
     
     // *********************************

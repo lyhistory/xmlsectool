@@ -72,7 +72,6 @@ import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
 import org.opensaml.core.config.InitializationException;
-import org.opensaml.core.config.InitializationService;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
 import org.opensaml.security.x509.X509Credential;
@@ -123,7 +122,7 @@ public final class XMLSecTool {
             initLogging(cli);
 
             try {
-                InitializationService.initialize();
+                InitializationSupport.initialize();
             } catch (InitializationException e) {
                 log.error("Unable to initialize OpenSAML library", e);
                 throw new Terminator(ReturnCode.RC_INIT);
