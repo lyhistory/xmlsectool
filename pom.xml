@@ -25,6 +25,7 @@
         <opensaml.groupId>org.opensaml</opensaml.groupId>
         <opensaml.version>3.2.0</opensaml.version>
         <java-support.version>7.2.0</java-support.version>
+        <shibboleth.site.url>https://build.shibboleth.net/nexus/content/sites/site</shibboleth.site.url>
     </properties>
 
     <repositories>
@@ -120,6 +121,29 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <dependencies>
+                    <!-- add optional Markdown processor -->
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-module-markdown</artifactId>
+                        <version>1.6</version>
+                    </dependency>
+                    <!-- support DAV protocol for site deploy -->
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-webdav-jackrabbit</artifactId>
+                        <version>2.10</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>release</id>
@@ -138,5 +162,12 @@
             </build>
         </profile>
     </profiles>
+
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <url>dav:${shibboleth.site.url}/${project.artifactId}/${project.version}/</url>
+        </site>
+    </distributionManagement>
 
 </project>
