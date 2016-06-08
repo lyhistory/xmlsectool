@@ -182,4 +182,9 @@
         </site>
     </distributionManagement>
 
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.shibboleth.net/jira/projects/XSTJ</url>
+    </issueManagement>
+
 </project>
