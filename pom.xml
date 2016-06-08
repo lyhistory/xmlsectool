@@ -20,6 +20,7 @@
         A command line tool for checking an XML file for well-formedness and validity as well as
         signing and checking signatures.
     </description>
+    <inceptionYear>2011</inceptionYear>
 
     <properties>
         <opensaml.groupId>org.opensaml</opensaml.groupId>
