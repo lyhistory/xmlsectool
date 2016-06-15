@@ -57,6 +57,9 @@ public final class CredentialHelper {
      * @param certificateFile path to the certificate file associated with the private key
      * 
      * @return the credentials
+     * 
+     * @throws CertificateException if there is a problem decoding the certificate
+     * @throws KeyException if there is a problem decoding the private key
      */
     protected static BasicX509Credential getFileBasedCredentials(final String keyFile, final String keyPassword,
             final String certificateFile) throws KeyException, CertificateException {
@@ -94,6 +97,9 @@ public final class CredentialHelper {
      * @param keyPassword private key password, may not be null
      * 
      * @return the credentials
+     * 
+     * @throws IOException if there was a problem reading the keystore
+     * @throws GeneralSecurityException if there was a problem 
      */
     protected static BasicX509Credential getKeystoreCredential(final String keystorePath,
             final String keystorePassword, final String keystoreProvider, final String keystoreType,
@@ -131,6 +137,9 @@ public final class CredentialHelper {
      * @param keyPassword private key password, may not be null
      * 
      * @return the credentials
+     * 
+     * @throws IOException if it is not possible to read the keystore
+     * @throws GeneralSecurityException if there is a problem loading the keystore, or loading the credential from it
      */
     @SuppressWarnings("unchecked")
     protected static BasicX509Credential getPKCS11Credential(final String keystoreProvider, final String pkcs11Config,
@@ -178,8 +187,10 @@ public final class CredentialHelper {
      * @param keyPassword private key password
      * 
      * @return the extracted credential
+     * 
+     * @throws GeneralSecurityException if there is a problem getting the credential from the keystore,
+     *      or if the credential is not of a known type 
      */
-    @SuppressWarnings("unchecked")
     protected static BasicX509Credential getCredentialFromKeystore(final KeyStore keystore, final String keyAlias,
             final String keyPassword) throws GeneralSecurityException {
 
