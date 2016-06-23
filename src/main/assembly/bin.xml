@@ -27,7 +27,7 @@
 			<outputDirectory>doc</outputDirectory>
 		</fileSet>
 
-		<!-- Copy execution srcipts into the root of the package -->
+		<!-- Copy execution scripts into the root of the package -->
 		<fileSet>
 			<directory>src/main/bash</directory>
 			<outputDirectory/>
