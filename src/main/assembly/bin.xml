@@ -11,7 +11,6 @@
 	<dependencySets>
 		<dependencySet>
 			<outputDirectory>lib</outputDirectory>
-            <directoryMode>774</directoryMode>
             <fileMode>444</fileMode>
             <scope>runtime</scope>
 			<includes>
