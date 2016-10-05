@@ -253,7 +253,7 @@ public class CommandLineArguments {
 
             validateCommandLineArguments();
             processBlacklistOptions();
-        } catch (ParameterException e) {
+        } catch (final ParameterException e) {
             errorAndExit(e.getMessage());
         }
     }

@@ -123,7 +123,7 @@ public final class XMLSecTool {
 
             try {
                 InitializationSupport.initialize();
-            } catch (InitializationException e) {
+            } catch (final InitializationException e) {
                 log.error("Unable to initialize OpenSAML library", e);
                 throw new Terminator(ReturnCode.RC_INIT);
             }
@@ -158,9 +158,9 @@ public final class XMLSecTool {
                 writeDocument(cli, xml);
             }
 
-        } catch (Terminator t) {
+        } catch (final Terminator t) {
             System.exit(t.getExitCode());
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             log.error("Unknown error", t);
             System.exit(ReturnCode.RC_UNKNOWN.getCode());
         }
@@ -187,10 +187,10 @@ public final class XMLSecTool {
             final Document xmlDoc = xmlParser.parse(xmlInputStream);
             log.info("XML document parsed and is well-formed.");
             return xmlDoc;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Error reading XML document from input source", e);
             throw new Terminator(ReturnCode.RC_IO);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             log.error("XML document was not well formed", e);
             throw new Terminator(ReturnCode.RC_MALFORMED_XML);
         }
@@ -235,7 +235,7 @@ public final class XMLSecTool {
             }
 
             return ins;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Unable to read input file '{}'", cli.getInputFile(), e);
             throw new Terminator(ReturnCode.RC_IO);
         }
@@ -272,7 +272,7 @@ public final class XMLSecTool {
             InputStream ins = response.getEntity().getContent();
             final Header contentEncodingHeader = response.getFirstHeader("Content-Encoding");
             if (contentEncodingHeader != null) {
-                String contentEncoding = contentEncodingHeader.getValue();
+                final String contentEncoding = contentEncodingHeader.getValue();
                 if ("deflate".equalsIgnoreCase(contentEncoding)) {
                     log.debug("Passing input file data through Inflater decompression filter");
                     ins = new InflaterInputStream(ins);
@@ -287,9 +287,9 @@ public final class XMLSecTool {
                 ins = new Base64InputStream(ins);
             }
             return ins;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Unable to read XML document from " + cli.getInputUrl(), e);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("error building an HTTP client instance for " + cli.getInputUrl(), e);
         }
         throw new Terminator(ReturnCode.RC_IO);
@@ -313,7 +313,7 @@ public final class XMLSecTool {
 
         try {
             return newFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             log.error("Unable to create XML parser", e);
             throw new Terminator(ReturnCode.RC_UNKNOWN);
         }
@@ -332,7 +332,7 @@ public final class XMLSecTool {
         try {
             log.debug("Building W3 XML Schema from file/directory '{}'", schemaFileOrDirectory.getAbsolutePath());
             validator = new SchemaValidator(schemaLanguage, schemaFileOrDirectory);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             log.error("Invalid XML schema files, unable to validate XML", e);
             throw new Terminator(ReturnCode.RC_INVALID_XS);
         }
@@ -341,10 +341,10 @@ public final class XMLSecTool {
             log.debug("Schema validating XML document");
             validator.validate(new DOMSource(xml));
             log.info("XML document is schema valid");
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             log.error("XML is not schema valid", e);
             throw new Terminator(ReturnCode.RC_INVALID_XML);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("internal error: I/O exception while validating XML", e);
             throw new Terminator(ReturnCode.RC_INVALID_XML);
         }
@@ -412,7 +412,7 @@ public final class XMLSecTool {
             addSignatureELement(cli, documentRoot, signatureElement);
             signature.sign(CredentialSupport.extractSigningKey(signingCredential));
             log.info("XML document successfully signed");
-        } catch (XMLSecurityException e) {
+        } catch (final XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -500,10 +500,10 @@ public final class XMLSecTool {
                     x509Data.addCRL(crl.getEncoded());
                 }
             }
-        } catch (XMLSecurityException e) {
+        } catch (final XMLSecurityException e) {
             log.error("Unable to constructor signature KeyInfo", e);
             throw new Terminator(ReturnCode.RC_UNKNOWN);
-        } catch (CRLException e) {
+        } catch (final CRLException e) {
 
         }
     }
@@ -575,7 +575,7 @@ public final class XMLSecTool {
             if (!signatureInserted) {
                 root.appendChild(signature);
             }
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             log.error("Invalid signature position: " + cli.getSignaturePosition());
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -621,7 +621,7 @@ public final class XMLSecTool {
         /*
          * Now look for the attribute which holds the ID value, and mark it as the ID attribute.
          */
-        NamedNodeMap attributes = docElement.getAttributes();
+        final NamedNodeMap attributes = docElement.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             final Attr attribute = (Attr) attributes.item(i);
             if (id.equals(attribute.getValue())) {
@@ -660,7 +660,7 @@ public final class XMLSecTool {
         final XMLSignature signature;
         try {
             signature = new XMLSignature(signatureElement, "");
-        } catch (XMLSecurityException e) {
+        } catch (final XMLSecurityException e) {
             log.error("Unable to read XML signature", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -681,7 +681,7 @@ public final class XMLSecTool {
                 log.error("Digest algorithm {} is blacklisted", alg);
                 throw new Terminator(ReturnCode.RC_SIG);
             }
-        } catch (XMLSignatureException e) {
+        } catch (final XMLSignatureException e) {
             log.error("unable to retrieve signature digest algorithm", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -713,7 +713,7 @@ public final class XMLSecTool {
                 log.error("XML document signature verification failed");
                 throw new Terminator(ReturnCode.RC_SIG);
             }
-        } catch (XMLSignatureException e) {
+        } catch (final XMLSignatureException e) {
             log.error("XML document signature verification failed with an error", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -736,7 +736,7 @@ public final class XMLSecTool {
         final Reference ref;
         try {
             ref = signature.getSignedInfo().item(0);
-        } catch (XMLSecurityException e) {
+        } catch (final XMLSecurityException e) {
             log.error("Apache XML Security exception obtaining Reference", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -805,7 +805,7 @@ public final class XMLSecTool {
         Transforms transforms = null;
         try {
             transforms = reference.getTransforms();
-        } catch (XMLSecurityException e) {
+        } catch (final XMLSecurityException e) {
             log.error("Apache XML Security error obtaining Transforms instance", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
@@ -826,7 +826,7 @@ public final class XMLSecTool {
             Transform transform = null;
             try {
                 transform = transforms.item(i);
-            } catch (TransformationException e) {
+            } catch (final TransformationException e) {
                 log.error("Error obtaining transform instance", e);
                 throw new Terminator(ReturnCode.RC_SIG);
             }
@@ -889,10 +889,10 @@ public final class XMLSecTool {
                 credential =
                         CredentialHelper.getFileBasedCredentials(cli.getKey(), cli.getKeyPassword(),
                                 cli.getCertificate());
-            } catch (KeyException e) {
+            } catch (final KeyException e) {
                 log.error("Unable to read key file " + cli.getKey(), e);
                 throw new Terminator(ReturnCode.RC_IO);
-            } catch (CertificateException e) {
+            } catch (final CertificateException e) {
                 log.error("Unable to read certificate file " + cli.getKey(), e);
                 throw new Terminator(ReturnCode.RC_IO);
             }
@@ -901,10 +901,10 @@ public final class XMLSecTool {
                 credential =
                         CredentialHelper.getPKCS11Credential(cli.getKeystoreProvider(),
                                 cli.getPkcs11Config(), cli.getKey(), cli.getKeyPassword());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 log.error("Error accessing PKCS11 store", e);
                 throw new Terminator(ReturnCode.RC_IO);
-            } catch (GeneralSecurityException e) {
+            } catch (final GeneralSecurityException e) {
                 log.error("Unable to recover key entry from PKCS11 store", e);
                 throw new Terminator(ReturnCode.RC_IO);
             }
@@ -913,10 +913,10 @@ public final class XMLSecTool {
                 credential =
                         CredentialHelper.getKeystoreCredential(cli.getKeystore(), cli.getKeystorePassword(),
                                 cli.getKeystoreProvider(), cli.getKeystoreType(), cli.getKey(), cli.getKeyPassword());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 log.error("Unable to read keystore " + cli.getKeystore(), e);
                 throw new Terminator(ReturnCode.RC_IO);
-            } catch (GeneralSecurityException e) {
+            } catch (final GeneralSecurityException e) {
                 log.error("Unable to recover key entry from keystore", e);
                 throw new Terminator(ReturnCode.RC_IO);
             }
@@ -954,7 +954,7 @@ public final class XMLSecTool {
                 }
                 crls.addAll(X509Support.decodeCRLs(crlFile));
             }
-        } catch (CRLException e) {
+        } catch (final CRLException e) {
             log.error("Unable to parse CRL file " + crlFile.getAbsolutePath(), e);
             throw new Terminator(ReturnCode.RC_INVALID_CRED);
         }
@@ -1002,14 +1002,14 @@ public final class XMLSecTool {
                 final Transformer serializer = tfac.newTransformer();
                 serializer.setOutputProperty("encoding", "UTF-8");
                 serializer.transform(new DOMSource(xml), new StreamResult(out));
-            } catch (TransformerException e) {
+            } catch (final TransformerException e) {
                 log.error("Unable to write out XML", e);
                 throw new Terminator(ReturnCode.RC_IO);
             }
             out.flush();
             out.close();
             log.info("XML document written to file {}", file.getAbsolutePath());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Unable to write document to file " + cli.getOutputFile(), e);
             throw new Terminator(ReturnCode.RC_IO);
         }

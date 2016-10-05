@@ -46,7 +46,7 @@ public final class InitializationSupport {
         try {
             Signature.getInstance("SHA256withECDSA");
             return true;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException e) {
             return false;
         }
     }

@@ -98,7 +98,7 @@ public class Blacklist {
      * 
      * @param digestChoice {@link DigestChoice} to add to blacklist
      */
-    public void addDigest(DigestChoice digestChoice) {
+    public void addDigest(final DigestChoice digestChoice) {
         addDigestAlgorithm(digestChoice.getDigestAlgorithm());
         addSignatureAlgorithm(digestChoice.getRSAAlgorithm());
         addSignatureAlgorithm(digestChoice.getECDSAAlgorithm());
@@ -110,7 +110,7 @@ public class Blacklist {
      * 
      * @param digestChoice {@link DigestChoice} to remove from blacklist
      */
-    public void removeDigest(DigestChoice digestChoice) {
+    public void removeDigest(final DigestChoice digestChoice) {
         removeDigestAlgorithm(digestChoice.getDigestAlgorithm());
         removeSignatureAlgorithm(digestChoice.getRSAAlgorithm());
         removeSignatureAlgorithm(digestChoice.getECDSAAlgorithm());
