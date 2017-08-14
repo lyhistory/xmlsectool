@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.shibboleth</groupId>
         <artifactId>parent-v3</artifactId>
-        <version>9</version>
+        <version>TRUNK-SNAPSHOT</version>
     </parent>
 
     <groupId>net.shibboleth.tool</groupId>
@@ -27,9 +27,6 @@
         <opensaml.version>3.2.0</opensaml.version>
         <java-support.version>7.2.0</java-support.version>
         <shibboleth.site.url>https://build.shibboleth.net/nexus/content/sites/site</shibboleth.site.url>
-        <!-- Remove at next parent POM re-base. -->
-        <checkstyle.version>6.19</checkstyle.version>
-        <checkstyle-plugin.version>2.17</checkstyle-plugin.version>
     </properties>
 
     <repositories>
