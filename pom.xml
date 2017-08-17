@@ -26,7 +26,6 @@
         <opensaml.groupId>org.opensaml</opensaml.groupId>
         <opensaml.version>3.2.0</opensaml.version>
         <java-support.version>7.2.0</java-support.version>
-        <shibboleth.site.url>https://build.shibboleth.net/nexus/content/sites/site</shibboleth.site.url>
         <xmlsec.version>2.0.6</xmlsec.version>
     </properties>
 
@@ -46,12 +45,6 @@
             </releases>
         </repository>
     </repositories>
-
-    <scm>
-        <connection>scm:git:https://git.shibboleth.net/git/${project.artifactId}</connection>
-        <developerConnection>scm:git:git@git.shibboleth.net:${project.artifactId}</developerConnection>
-        <url>https://git.shibboleth.net/view/?p=${project.artifactId}.git</url>
-    </scm>
 
     <dependencies>
         <!-- Compile dependencies -->
@@ -176,10 +169,16 @@
         </profile>
     </profiles>
 
+    <scm>
+        <connection>${shibboleth.scm.connection}${project.artifactId}</connection>
+        <developerConnection>${shibboleth.scm.developerConnection}${project.artifactId}</developerConnection>
+        <url>${shibboleth.scm.url}${project.artifactId}.git</url>
+    </scm>
+
     <distributionManagement>
         <site>
             <id>site</id>
-            <url>dav:${shibboleth.site.url}/${project.artifactId}/${project.version}/</url>
+            <url>dav:${shibboleth.site.url}${project.artifactId}/${project.version}/</url>
         </site>
     </distributionManagement>
 
