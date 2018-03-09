@@ -118,6 +118,11 @@
 
         <!-- Test Dependencies -->
         <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-legacy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${opensaml.groupId}</groupId>
             <artifactId>opensaml-security-api</artifactId>
             <version>${opensaml.version}</version>
