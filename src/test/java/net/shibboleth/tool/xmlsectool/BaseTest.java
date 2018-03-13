@@ -29,9 +29,8 @@ import java.security.cert.CertificateException;
 import java.util.MissingResourceException;
 
 import javax.annotation.Nonnull;
+import javax.xml.transform.Source;
 
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.security.SecurityProviderTestSupport;
 import org.opensaml.security.x509.X509Credential;
@@ -42,12 +41,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
+import org.xmlunit.input.NormalizedSource;
 
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.utilities.java.support.xml.SerializeSupport;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 
 public abstract class BaseTest {
@@ -181,7 +185,6 @@ public abstract class BaseTest {
     @BeforeClass
     public void setUp() throws ComponentInitializationException, InitializationException {
         InitializationSupport.initialize();
-        XMLUnit.setIgnoreWhitespace(true);
 
         parserPool = new BasicParserPool();
         parserPool.initialize();
@@ -223,18 +226,40 @@ public abstract class BaseTest {
     }
 
     /**
-     * Checks whether two nodes are identical based on {@link Diff#identical()}.
-     * 
+     * Checks whether two nodes are identical.
+     *
+     * The only variation that is permitted for the purpose of comparison is that
+     * adjacent text nodes will be coalesced.
+     *
+     * Tests requiring other semantics should call XMLUnit directly.
+     *
      * @param expected the expected node against which the actual node will be tested, never null
      * @param actual the actual node tested against the expected node, never null
      */
-    public void assertXMLIdentical(Node expected, Node actual) {
+    public void assertXMLIdentical(@Nonnull final Node expected, @Nonnull final Node actual) {
         Constraint.isNotNull(expected, "Expected Node may not be null");
         Constraint.isNotNull(actual, "Actual Node may not be null");
 
-        Diff diff = new Diff(expected.getOwnerDocument(), actual.getOwnerDocument());
-        if (!diff.identical()) {
-            org.testng.Assert.fail(diff.toString());
+        /*
+         * Normalize empty and adjacent text nodes within the source nodes.
+         *
+         * Don't try to simplify this by passing expected and actual directly to the
+         * NormalizedSource(Node) constructor. That's much faster, as the constructor just
+         * normalizes the provided node, but by the same token it causes the original
+         * node to be changed, and side-effects are undesirable in a general-use method
+         * like this one.
+         */
+        final Source expectedSource = new NormalizedSource(Input.fromNode(expected).build());
+        final Source actualSource = new NormalizedSource(Input.fromNode(actual).build());
+
+        final Diff diff = DiffBuilder.compare(expectedSource).withTest(actualSource)
+                .checkForIdentical()
+                .build();
+
+        if (diff.hasDifferences()) {
+            System.out.println("Expected:\n" + SerializeSupport.nodeToString(expected));
+            System.out.println("Actual:\n" + SerializeSupport.nodeToString(actual));
+            Assert.fail(diff.toString());
         }
     }
 
