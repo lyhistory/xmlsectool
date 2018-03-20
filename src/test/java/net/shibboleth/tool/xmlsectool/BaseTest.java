@@ -49,6 +49,7 @@ import org.xmlunit.input.NormalizedSource;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
+import net.shibboleth.utilities.java.support.testing.TestSupport;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import net.shibboleth.utilities.java.support.xml.SerializeSupport;
@@ -313,10 +314,9 @@ public abstract class BaseTest {
 
         // If we're using something claiming to be SunEC on OpenJDK 7, it may actually be broken
         // so don't bother with the tests.
-        // Note: test version last to avoid problems with OpenJDK 9 previews.
         final SecurityProviderTestSupport sup = new SecurityProviderTestSupport();
         if (ecsig.getProvider().getName().equals(SecurityProviderTestSupport.SUNEC_PROVIDER_NAME) &&
-                sup.isOpenJDK() && sup.getJavaVersion() <= 7) {
+                sup.isOpenJDK() && !TestSupport.isJavaV8OrLater()) {
             return false;
         }
 
