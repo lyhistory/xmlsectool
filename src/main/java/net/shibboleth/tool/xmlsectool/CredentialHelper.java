@@ -26,6 +26,7 @@ import java.security.KeyException;
 import java.security.KeyStore;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStore.TrustedCertificateEntry;
+import java.security.KeyStoreException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.CertificateException;
@@ -196,6 +197,9 @@ public final class CredentialHelper {
 
         final KeyStore.Entry keyEntry = keystore.getEntry(keyAlias,
                 new KeyStore.PasswordProtection(keyPassword.toCharArray()));
+        if (keyEntry == null) {
+            throw new KeyStoreException("entry '" + keyAlias + "' not found in keystore");
+        }
 
         final BasicX509Credential credential;
         if (keyEntry instanceof PrivateKeyEntry) {
