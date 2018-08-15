@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0" xmlns:ukfedlabel="http://ukfederation.org.uk/2006/11/label" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="uk001480" entityID="https://idp.shibboleth.net/idp/shibboleth" xsi:schemaLocation="urn:oasis:names:tc:SAML:2.0:metadata ../xml/saml-schema-metadata-2.0.xsd     urn:oasis:names:tc:SAML:metadata:algsupport ../xml/sstc-saml-metadata-algsupport-v1.0.xsd     urn:oasis:names:tc:SAML:metadata:ui ../xml/sstc-saml-metadata-ui-v1.0.xsd     urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol ../xml/sstc-saml-idp-discovery.xsd     urn:oasis:names:tc:SAML:profiles:SSO:request-init ../xml/sstc-request-initiation.xsd     urn:mace:shibboleth:metadata:1.0 ../xml/shibboleth-metadata-1.0.xsd     http://ukfederation.org.uk/2006/11/label ../xml/uk-fed-label.xsd     http://www.w3.org/2001/04/xmlenc# ../xml/xenc-schema.xsd     http://www.w3.org/2000/09/xmldsig# ../xml/xmldsig-core-schema.xsd"><ds:Signature>
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"/>
+<ds:Reference URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>Rr3CdVsxDDuIPwOMayyz+TsJuh2vUQKWr9n0oTFSE2k=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+8JbyTpN2BIlTznhFQ0mb+FhYSco8jiCPxismEPTctThT+FyHRHY5kIFdy7GwSx/MtXSvs/YlaBTt
+BuMBndlUfl+nWQBMKoXnl/udcxZEMS0gDfi97zxQ/NRkBCcV3zzV
+</ds:SignatureValue>
+<ds:KeyInfo>
+<ds:KeyValue>
+<ds:ECDSAKeyValue xmlns="http://www.w3.org/2001/04/xmldsig-more#"><ds:DomainParameters><ds:NamedCurve URI="urn:oid:1.3.132.0.34"/></ds:DomainParameters><ds:PublicKey><ds:X Value="22714017383156298768792222248623834536119205698353491697976565749555014629454508635569605982462543383373469272599808"/><ds:Y Value="6845105134873809498640009633894113266424921172891267745175953172836177065415901124078463093342962116151678987720584"/></ds:PublicKey></ds:ECDSAKeyValue>
+</ds:KeyValue>
+<ds:X509Data>
+<ds:X509Certificate>
+MIICXDCCAeOgAwIBAgIJAJnrL3SN9G0gMAkGByqGSM49BAEwbTELMAkGA1UEBhMCR0IxETAPBgNV
+BAgMCFNjb3RsYW5kMRIwEAYDVQQHDAlFZGluYnVyZ2gxGzAZBgNVBAoMElNoaWJib2xldGggUHJv
+amVjdDEaMBgGA1UEAwwRRUNEU0EgVGVzdCBTaWduZXIwHhcNMTMwMzA4MTgwMDUyWhcNMTMwNDA3
+MTgwMDUyWjBtMQswCQYDVQQGEwJHQjERMA8GA1UECAwIU2NvdGxhbmQxEjAQBgNVBAcMCUVkaW5i
+dXJnaDEbMBkGA1UECgwSU2hpYmJvbGV0aCBQcm9qZWN0MRowGAYDVQQDDBFFQ0RTQSBUZXN0IFNp
+Z25lcjB2MBAGByqGSM49AgEGBSuBBAAiA2IABJOTcWHcnuaawymYM9ppSrexyjctFpLJuKtnYW54
+Tr9KAXSX8V2co9leb+v5jCltACx5OkbIOIDmuZOp4O5t8/gBrLN/sv73Pb4sIp9a5OHDuojy06mm
+Gqh3D+RLMqjXiKNQME4wHQYDVR0OBBYEFPkX7lxo3PJkSfXjs8YVx2QjHp4NMB8GA1UdIwQYMBaA
+FPkX7lxo3PJkSfXjs8YVx2QjHp4NMAwGA1UdEwQFMAMBAf8wCQYHKoZIzj0EAQNoADBlAjEAt2Uv
+yCA7GgvfC6OsmA2Qr5oApjdE/YiVlCexQQADZiuZ5GIvF3dXd5MxrAj0mMP/AjBoxJbpCfKoXzzW
++KULUxg3RxjaWBJRNfk6Tv0kLvjF2syGmVVdlEfjQLsXQx+Rkvs=
+</ds:X509Certificate>
+</ds:X509Data>
+</ds:KeyInfo>
+</ds:Signature>
+    <!--
+        This is a shibboleth.net Shibboleth 2 IdP for the JISC Services Management Company Ltd. 
+    -->
+    <Extensions>
+        <shibmd:Scope regexp="false">shibboleth.net</shibmd:Scope>
+        <ukfedlabel:UKFederationMember/>
+        <ukfedlabel:ExportOptIn date="2011-12-07"/>
+        <ukfedlabel:Software date="2012-12-07" fullVersion="2.3.8" name="Shibboleth" version="2"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha512"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#sha384"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <alg:DigestMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha384"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+        <alg:SigningMethod xmlns:alg="urn:oasis:names:tc:SAML:metadata:algsupport" Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+    </Extensions>
+    <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+        <Extensions>
+            <shibmd:Scope regexp="false">shibboleth.net</shibmd:Scope>
+            <mdui:UIInfo xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui">
+                <mdui:DisplayName xml:lang="en">Shibboleth.net</mdui:DisplayName>
+                <mdui:Description xml:lang="en">An identity provider hosted and used by the
+                    developers of Shibboleth.</mdui:Description>
+                <mdui:Logo height="82" width="64">https://shibboleth.net/images/gryphon_64x82.png</mdui:Logo>
+            </mdui:UIInfo>
+        </Extensions>
+        <KeyDescriptor>
+            <ds:KeyInfo>
+                <ds:X509Data>
+                    <ds:X509Certificate>
+                        MIIDNDCCAhygAwIBAgIVAKyBWnv1/h1U11C7kHvV33FIrEsJMA0GCSqGSIb3DQEB
+                        BQUAMB0xGzAZBgNVBAMTEmlkcC5zaGliYm9sZXRoLm5ldDAeFw0xMDEyMjkwMDA5
+                        MTlaFw0zMDEyMjkwMDA5MTlaMB0xGzAZBgNVBAMTEmlkcC5zaGliYm9sZXRoLm5l
+                        dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKjWAdpUx/82FUzrRMfA
+                        M63PkZZYCm3RnT3eiL+DeJcbGdcEJx/o+32vgHXJgJOBt14YdVam5GErIYgk4SGq
+                        5Z5RYl0PpQn6HQG/9prGnYCu6p5zfb0557o51Eh8TcVehS6Y2ruyCjAF0jgVMwh5
+                        /0Oh8EE9wG93pSpm70DAiiaTVCb8WoT1aZYtxbBmmuH10bU+wge/NMmaHuVAe599
+                        pyezFIL4FoI2g+1Q6nG4Yl1Z07I81tTApXKVMWRt/4/M3m2D7PUMOQ9qsxthp2L/
+                        LovIeNo0bTyeW290T2Y/JRZhKOgeDqkhuu82DPri2Vm5G/unB69KfRB7CF9QWIc3
+                        y80CAwEAAaNrMGkwSAYDVR0RBEEwP4ISaWRwLnNoaWJib2xldGgubmV0hilodHRw
+                        czovL2lkcC5zaGliYm9sZXRoLm5ldC9pZHAvc2hpYmJvbGV0aDAdBgNVHQ4EFgQU
+                        3uZ32tKXJBzPCTp2dtHSLV0FvGgwDQYJKoZIhvcNAQEFBQADggEBAAYXYuzp0UTj
+                        3yLRvUCbEtaw9b80+weOELkVv3WFY3QAG8pIKEblrMMtzrzLFWZwYwwMZDab/HnH
+                        egmgjZBthrOedEmoJ+OHRmIiS8zdZxVGEadJhTUaeIkO6kwK7Ht3nQePoiXV7TI5
+                        +A9SpmZGoukC85Za4wGDw4xWGs5t5l6tBuuV+1s0oC6T8ih5n/NyThfpbihSW0d7
+                        iBfSUickgpoM2BLM3FCnbO8HOsX1rGV4ypG9ZGDDvr2jrzalXXmc05gSlL2qd9ce
+                        Q1M+9vavusPCqlj2zZf2/HfzhyiFcb/OgA0oTFWW2ynXji6UarIV5QaPoi/XmGmx
+                        BXD36HfGBXk=
+                    </ds:X509Certificate>
+                </ds:X509Data>
+            </ds:KeyInfo>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes192-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"/>
+            <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p"/>
+        </KeyDescriptor>
+        <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://shibboleth.net/idp/profile/SAML2/POST/SSO"/>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://shibboleth.net/idp/profile/SAML2/POST-SimpleSign/SSO"/>
+        <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://shibboleth.net/idp/profile/SAML2/Redirect/SSO"/>
+    </IDPSSODescriptor>
+    <Organization>
+        <OrganizationName xml:lang="en">JISC Services Management Company Ltd</OrganizationName>
+        <OrganizationDisplayName xml:lang="en">Shibboleth.net</OrganizationDisplayName>
+        <OrganizationURL xml:lang="en">http://www.shibboleth.net/</OrganizationURL>
+    </Organization>
+    <ContactPerson contactType="support">
+        <GivenName>Shibboleth.Net Technical Support</GivenName>
+        <EmailAddress>mailto:contact@shibboleth.net</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="technical">
+        <GivenName>Scott</GivenName>
+        <SurName>Cantor</SurName>
+        <EmailAddress>mailto:cantor.2@osu.edu</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="technical">
+        <GivenName>Ian</GivenName>
+        <SurName>Young</SurName>
+        <EmailAddress>mailto:ukfed@iay.org.uk</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="administrative">
+        <GivenName>Scott</GivenName>
+        <SurName>Cantor</SurName>
+        <EmailAddress>mailto:cantor.2@osu.edu</EmailAddress>
+    </ContactPerson>
+    <ContactPerson contactType="administrative">
+        <GivenName>Ian</GivenName>
+        <SurName>Young</SurName>
+        <EmailAddress>mailto:ian@iay.org.uk</EmailAddress>
+    </ContactPerson>
+</EntityDescriptor>

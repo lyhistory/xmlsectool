@@ -32,6 +32,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +47,7 @@ import javax.annotation.Nonnull;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -71,6 +73,10 @@ import org.apache.xml.security.signature.reference.ReferenceSubTreeData;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1StreamParser;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERSequence;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
@@ -483,6 +489,35 @@ public final class XMLSecTool {
         final PublicKey pk = credential.getPublicKey();
         if (pk instanceof RSAPublicKey || pk instanceof DSAPublicKey) {
             keyInfo.add(pk);
+        } else if (pk instanceof ECPublicKey) {
+            try {
+                ASN1StreamParser parser = new ASN1StreamParser(pk.getEncoded());
+                DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+                DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+                ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
+                DERBitString key = (DERBitString) seq.getObjectAt(1).toASN1Primitive();
+
+                Element ECKeyValue = doc.createElement("ds:ECDSAKeyValue");
+                ECKeyValue.setAttribute("xmlns", "http://www.w3.org/2001/04/xmldsig-more#");
+                Element DomainParameters = doc.createElement("ds:DomainParameters");
+                Element NamedCurve = doc.createElement("ds:NamedCurve");
+                NamedCurve.setAttribute("URI", "urn:oid:"+oid.getId());
+                DomainParameters.appendChild(NamedCurve);
+                ECKeyValue.appendChild(DomainParameters);
+                
+                Element PublicKey = doc.createElement("ds:PublicKey");
+                Element PublicKeyX = doc.createElement("ds:X");
+                PublicKeyX.setAttribute("Value", ((ECPublicKey) pk).getW().getAffineX().toString());
+                Element PublicKeyY = doc.createElement("ds:Y");
+                PublicKeyY.setAttribute("Value", ((ECPublicKey) pk).getW().getAffineY().toString());
+//                PublicKey.setTextContent(Base64.encodeBase64String(key.getBytes()));
+                PublicKey.appendChild(PublicKeyX);
+                PublicKey.appendChild(PublicKeyY);
+                ECKeyValue.appendChild(PublicKey);
+                keyInfo.addKeyValue(ECKeyValue);
+            } catch (IOException e) {
+                // 
+            }
         } else {
             log.debug("not adding KeyValue for unsupported credential of type " + pk.getAlgorithm());
         }
@@ -1001,6 +1036,7 @@ public final class XMLSecTool {
                 final TransformerFactory tfac = TransformerFactory.newInstance();
                 final Transformer serializer = tfac.newTransformer();
                 serializer.setOutputProperty("encoding", "UTF-8");
+                //serializer.setOutputProperty(OutputKeys.INDENT, "yes");
                 serializer.transform(new DOMSource(xml), new StreamResult(out));
             } catch (final TransformerException e) {
                 log.error("Unable to write out XML", e);

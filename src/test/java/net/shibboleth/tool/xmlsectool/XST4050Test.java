@@ -26,8 +26,6 @@ import org.opensaml.security.x509.X509Credential;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.KeyValue;
 import org.testng.Assert;
-import org.testng.SkipException;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -35,21 +33,17 @@ import org.w3c.dom.Element;
 import net.shibboleth.utilities.java.support.xml.ElementSupport;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 
-public class XSTJ51Test extends BaseTest {
+/**
+ *
+ */
+public class XST4050Test extends BaseTest {
 
-    XSTJ51Test() {
-        super(XSTJ51Test.class);
+    XST4050Test() {
+        super(XST4050Test.class);
     }
     
-    @BeforeMethod
-    protected void conditionalSkip() {
-        if (!canTestECC()) {
-            throw new SkipException("skipping because we don't have a working ECC provider");
-        }        
-    }
-
     @Test
-    public void xstj51_KeyInfo() throws Exception {
+    public void xst4050_KeyInfo() throws Exception {
         // acquire an Elliptic Curve credential to sign with
         final X509Credential cred = getSigningCredential("sign", "EC", ECPublicKey.class);
 
@@ -81,12 +75,19 @@ public class XSTJ51Test extends BaseTest {
         final List<Element> keyInfoChildren = ElementSupport.getChildElements(keyInfoElement);
         Assert.assertFalse(keyInfoChildren.isEmpty());
         final List<Element> keyValues = ElementSupport.getChildElements(keyInfoElement, KeyValue.DEFAULT_ELEMENT_NAME);
-        for (final Element keyValue : keyValues) {
-            Assert.assertNotNull(ElementSupport.getFirstChildElement(keyValue), "empty KeyValue element");
-        }
-
-        // validate the resulting XML; this will also show up any error
-        //final SchemaValidator validator = new SchemaValidator(SchemaLanguage.XML, getSchemaDirectory());
-        //validator.validate(new DOMSource(xml));
+//        for (final Element keyValue : keyValues) {
+//            Assert.assertNotNull(ElementSupport.getFirstChildElement(keyValue), "empty KeyValue element");
+//        }
+        final String[] args2 = {
+                "--verifySignature",
+                "--inFile", "in.xml",
+                "--certificate", "sign.crt"
+                };
+        final CommandLineArguments cli2 = new CommandLineArguments();
+        cli2.parseCommandLineArguments(args2);
+        final Document xml2 = readXMLDocument("out.xml");
+        XMLSecTool.verifySignature(cli2, cred, xml2);
+        
     }
+
 }
