@@ -84,7 +84,13 @@ public class XSTJ51Test extends BaseTest {
         for (final Element keyValue : keyValues) {
             Assert.assertNotNull(ElementSupport.getFirstChildElement(keyValue), "empty KeyValue element");
         }
-
+        
+        /**
+         * I commented the validation below for the reason that
+         * as refer to https://www.w3.org/TR/xmldsig-core2/#sec-RFC4050Compat,
+         * in 7.2.3.2 Compatibility with RFC 4050 it states::
+         * Avoid validating the ECDSAKeyValue element against the [RFC4050] schema. XML Schema validators may not support integer types with decimal data exceeding 18 decimal digits. [XMLSCHEMA-1][XMLSCHEMA-2].
+         */
         // validate the resulting XML; this will also show up any error
         //final SchemaValidator validator = new SchemaValidator(SchemaLanguage.XML, getSchemaDirectory());
         //validator.validate(new DOMSource(xml));
