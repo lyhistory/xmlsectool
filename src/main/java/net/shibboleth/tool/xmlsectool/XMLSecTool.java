@@ -363,7 +363,7 @@ public final class XMLSecTool {
      * @param signingCredential credential to use for signing
      * @param xml document to be signed
      */
-    protected static void sign(@Nonnull final CommandLineArguments cli,
+    public static void sign(@Nonnull final CommandLineArguments cli,
             @Nonnull final X509Credential signingCredential, @Nonnull final Document xml) {
         log.debug("Preparing to sign document");
         final Element documentRoot = xml.getDocumentElement();
@@ -681,7 +681,7 @@ public final class XMLSecTool {
      * @param credential credential to use for validation
      * @param xmlDocument document whose signature will be validated
      */
-    protected static void verifySignature(final CommandLineArguments cli,
+    public static void verifySignature(final CommandLineArguments cli,
             @Nonnull final X509Credential credential,
             final Document xmlDocument) {
         final Element signatureElement = getSignatureElement(xmlDocument);

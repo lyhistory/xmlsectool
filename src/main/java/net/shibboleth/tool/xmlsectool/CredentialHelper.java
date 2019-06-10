@@ -62,7 +62,7 @@ public final class CredentialHelper {
      * @throws CertificateException if there is a problem decoding the certificate
      * @throws KeyException if there is a problem decoding the private key
      */
-    protected static BasicX509Credential getFileBasedCredentials(final String keyFile, final String keyPassword,
+    public static BasicX509Credential getFileBasedCredentials(final String keyFile, final String keyPassword,
             final String certificateFile) throws KeyException, CertificateException {
         LOG.debug("Reading PEM/DER encoded credentials from the filesystem");
 

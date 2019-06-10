@@ -1,38 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><token><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-<ds:SignedInfo>
-<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256"/>
-<ds:Reference URI="">
-<ds:Transforms>
-<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
-<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-</ds:Transforms>
-<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-<ds:DigestValue>skrOZ+sJWluJWec2yOhWYwyQtL82tJDLt0228y6ce+g=</ds:DigestValue>
-</ds:Reference>
-</ds:SignedInfo>
-<ds:SignatureValue>
-uJbxuRp4GkxMkYjT5SllfWrs1clsCmOk2m37ocOYUkacyp1iFdgg9UkfJQo/Ig6p33NB47YCWqa3
-bMnso1V62g==
-</ds:SignatureValue>
-<ds:KeyInfo>
-<ds:KeyValue>
-<ds:ECDSAKeyValue xmlns="http://www.w3.org/2001/04/xmldsig-more#"><ds:DomainParameters><ds:NamedCurve URI="urn:oid:1.3.132.0.10"/></ds:DomainParameters><ds:PublicKey><ds:X Value="71392770498868550275735715780452504776418970694031815142958360384980689316356"/><ds:Y Value="43997676994221354251935287070984959264803291651279329001555906098311879836150"/></ds:PublicKey></ds:ECDSAKeyValue>
-</ds:KeyValue>
-<ds:X509Data>
-<ds:X509Certificate>
-MIIBjzCCATOgAwIBAgIEXX5s0jAMBggqhkjOPQQDAgUAME8xCzAJBgNVBAYTAlNHMRQwEgYDVQQK
-EwtBbHBoYVdhbGxldDEUMBIGA1UECxMLQWxwaGFXYWxsZXQxFDASBgNVBAMTC0FscGhhV2FsbGV0
-MB4XDTE4MTExNDE3MzMyMloXDTE5MDQwOTE3MzMyMlowTzELMAkGA1UEBhMCU0cxFDASBgNVBAoT
-C0FscGhhV2FsbGV0MRQwEgYDVQQLEwtBbHBoYVdhbGxldDEUMBIGA1UEAxMLQWxwaGFXYWxsZXQw
-VjAQBgcqhkjOPQIBBgUrgQQACgNCAASd1uBKfXznL0Eyvm6yKTDH/l2RsTWiwq+Qj5k6EFdqBGFF
-zX06r6xKaLASmNELsaD1ZHRxvBm9ZQJUvuJwmcH2MAwGCCqGSM49BAMCBQADSAAwRQIhAKB8MhCK
-aZbdcibotwMWzL8L7v7x4YJfGyx8RBjk4ZvlAiArTOr3j3pCalIlmkFVYUl7Gzakz5RjaL9MXurx
-ekJeuA==
-</ds:X509Certificate>
-</ds:X509Data>
-</ds:KeyInfo>
-</ds:Signature>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><token>
   <contract id="holding_contract" type="holding">
     <address network="1">0xA66A3F08068174e8F005112A8b2c7A507a822335</address>
     <address network="3">0xd8e5f58de3933e1e35f9c65eb72cb188674624f3</address>
