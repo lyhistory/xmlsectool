@@ -37,6 +37,7 @@ public class CommandLineArguments {
 
     // Command-line option names, in their order of first appearance in the usage text
     private static final String HELP_ARG = "help";
+    private static final String EXTRA_ARG = "extra";
     private static final String SIGN_ARG = "sign";
     private static final String V_SIG_ARG = "verifySignature";
     private static final String V_SCHEMA_ARG = "validateSchema";
@@ -80,6 +81,9 @@ public class CommandLineArguments {
     private static final String LOG_CONFIG_ARG = "logConfig";
 
     // Actions
+    @Parameter(names = OPT + EXTRA_ARG)
+    private boolean extra;
+    
     @Parameter(names = OPT + SIGN_ARG)
     private boolean sign;
 
@@ -304,7 +308,11 @@ public class CommandLineArguments {
     public String getHttpProxyPassword() {
         return httpProxyPassword;
     }
-
+    
+    public boolean doExtra() {
+        return extra;
+    }
+    
     public boolean doSign() {
         return sign;
     }
@@ -480,6 +488,22 @@ public class CommandLineArguments {
         }
 
         if (doListBlacklist()) {
+            return;
+        }
+        
+        if (doExtra()) {
+            if ((getInputFile() == null && getInputUrl() == null) || (getInputFile() != null && getInputUrl() != null)) {
+                errorAndExit("One, and only one, document input method must be specified");
+            }
+            
+            if (digestName != null) {
+                digest = DigestChoice.find(digestName);
+                if (digest == null) {
+                    errorAndExit("digest choice \"" + digestName + "\" was not recognised");
+                }
+            } else {
+                digest = DigestChoice.SHA256;
+            }
             return;
         }
         

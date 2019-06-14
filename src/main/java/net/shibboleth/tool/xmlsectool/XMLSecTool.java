@@ -23,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyException;
@@ -32,6 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,7 +66,9 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.keys.content.KeyName;
 import org.apache.xml.security.keys.content.X509Data;
+import org.apache.xml.security.signature.Manifest;
 import org.apache.xml.security.signature.Reference;
+import org.apache.xml.security.signature.ReferenceNotInitializedException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.signature.reference.ReferenceData;
@@ -71,6 +76,15 @@ import org.apache.xml.security.signature.reference.ReferenceSubTreeData;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.transforms.Transforms;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1StreamParser;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.crypto.ec.CustomNamedCurves;
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
@@ -97,6 +111,11 @@ import net.shibboleth.utilities.java.support.xml.AttributeSupport;
 import net.shibboleth.utilities.java.support.xml.ElementSupport;
 import net.shibboleth.utilities.java.support.xml.SchemaBuilder.SchemaLanguage;
 import net.shibboleth.utilities.java.support.xml.SerializeSupport;
+
+
+import org.web3j.crypto.Hash;
+import org.web3j.crypto.Keys;
+import org.web3j.crypto.Sign;
 
 /**
  *  A command line tool for checking an XML file for well-formedness and validity as well as
@@ -411,6 +430,102 @@ public final class XMLSecTool {
 
             addSignatureELement(cli, documentRoot, signatureElement);
             signature.sign(CredentialSupport.extractSigningKey(signingCredential));
+            System.out.println("digest value:"+org.apache.xml.security.utils.Base64.encode(signature.getSignedInfo().item(0).getDigestValue()));
+            
+            //h=H("TRUST/REVOKE"|𝑑) 
+            String d = org.apache.xml.security.utils.Base64.encode(signature.getSignedInfo().item(0).getDigestValue());
+            log.info(String.format("digest value:%s",d));
+            
+            byte[] h_trust = Hash.sha3(String.format("TRUST{0}", d).getBytes(StandardCharsets.UTF_8));
+            byte[] h_revoke = Hash.sha3(String.format("REVOKE{0}", d).getBytes(StandardCharsets.UTF_8));
+            X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
+            ECDomainParameters CURVE = new ECDomainParameters(
+                    CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
+            BigInteger privTrust = new BigInteger(encodeHexString(h_trust),16);
+            BigInteger privRevoke = new BigInteger(encodeHexString(h_revoke),16);
+            //new FixedPointCombMultiplier().multiply(CURVE.getG(), privKey);
+            BigInteger trustPK = Sign.publicKeyFromPrivate(privTrust);
+            BigInteger revokePK = Sign.publicKeyFromPrivate(privRevoke);
+            BigInteger adminPK = new BigInteger(encodeHexString(signingCredential.getPublicKey().getEncoded()),16);
+            System.out.println("adminPK:"+adminPK);
+            String proofOfTrust = Keys.getAddress(adminPK);
+            String proofOfRevoke = Keys.getAddress(revokePK);
+            log.info(String.format("proof of trust address:%s, proof of revoke address:%s", proofOfTrust,proofOfRevoke));
+            log.info("XML document successfully signed");
+        } catch (final XMLSecurityException e) {
+            log.error("Unable to create XML document signature", e);
+            throw new Terminator(ReturnCode.RC_SIG);
+        }
+    }
+    public static String encodeHexString(byte[] byteArray) {
+        StringBuffer hexStringBuffer = new StringBuffer();
+        for (int i = 0; i < byteArray.length; i++) {
+            hexStringBuffer.append(byteToHex(byteArray[i]));
+        }
+        return hexStringBuffer.toString();
+    }
+    public static String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
+    }
+    /**
+     * Signs a document.
+     * 
+     * @param cli command line arguments
+     * @param signingCredential credential to use for signing
+     * @param xml document to be signed
+     */
+    protected static void generateAddress(@Nonnull final CommandLineArguments cli,
+             @Nonnull final Document xml) {
+        log.debug("Preparing to sign document");
+        final Element documentRoot = xml.getDocumentElement();
+        Element signatureElement = getSignatureElement(xml);
+        if (signatureElement == null) {
+            
+        }
+        
+        /*
+         * Determine the digest algorithm:
+         * 
+         *    * if the CLI digestAlgorithm option has been used, it takes precedence.
+         *    * fall back to the shorthand digest choice.
+         */
+        String digestAlgorithm = cli.getDigestAlgorithm();
+        if (digestAlgorithm == null) {
+            digestAlgorithm = cli.getDigest().getDigestAlgorithm();
+        }
+        
+        final String c14nAlgorithm = SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS;
+
+        try {
+            final XMLSignature signature = null;
+
+            final Transforms contentTransforms = new Transforms(xml);
+            contentTransforms.addTransform(SignatureConstants.TRANSFORM_ENVELOPED_SIGNATURE);
+            contentTransforms.addTransform(SignatureConstants.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
+//            signature.addDocument(getSignatureReferenceUri(cli, documentRoot), contentTransforms,
+//                    digestAlgorithm);
+            //signature.getSignedInfo().generateDigestValues();
+            
+            Manifest manifest=new Manifest(xml);
+            manifest.addDocument("#", getSignatureReferenceUri(cli, documentRoot), contentTransforms, digestAlgorithm, null, null);
+            addSignatureELement(cli, documentRoot, signatureElement);
+            manifest.item(0).generateDigestValue();
+            byte[] digestvalue = manifest.item(0).getDigestValue();
+//            Reference ref = new Reference(xml, "#", getSignatureReferenceUri(cli, documentRoot), manifest, contentTransforms, digestAlgorithm);
+//            ref.generateDigestValue();
+//            ref.getDigestValue();
+//            Reference ref = 
+//                    new Reference(getDocument(), baseURI, referenceURI, this, transforms, digestURI);
+
+                
+//            for (int i = 0; i < this.getLength(); i++) {
+//                // update the cached Reference object, the Element content is automatically updated
+//                Reference currentRef = this.references.get(i);
+//                currentRef.generateDigestValue();
+//            }
             log.info("XML document successfully signed");
         } catch (final XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
@@ -483,6 +598,35 @@ public final class XMLSecTool {
         final PublicKey pk = credential.getPublicKey();
         if (pk instanceof RSAPublicKey || pk instanceof DSAPublicKey) {
             keyInfo.add(pk);
+        } else if (pk instanceof ECPublicKey) {
+            try {
+                ASN1StreamParser parser = new ASN1StreamParser(pk.getEncoded());
+                DERSequence seq = (DERSequence) parser.readObject().toASN1Primitive();
+                DERSequence innerSeq = (DERSequence) seq.getObjectAt(0).toASN1Primitive();
+                ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) innerSeq.getObjectAt(1).toASN1Primitive();
+                DERBitString key = (DERBitString) seq.getObjectAt(1).toASN1Primitive();
+
+                Element ECKeyValue = doc.createElement("ds:ECDSAKeyValue");
+                ECKeyValue.setAttribute("xmlns", "http://www.w3.org/2001/04/xmldsig-more#");
+                Element DomainParameters = doc.createElement("ds:DomainParameters");
+                Element NamedCurve = doc.createElement("ds:NamedCurve");
+                NamedCurve.setAttribute("URI", "urn:oid:"+oid.getId());
+                DomainParameters.appendChild(NamedCurve);
+                ECKeyValue.appendChild(DomainParameters);
+                
+                Element PublicKey = doc.createElement("ds:PublicKey");
+                Element PublicKeyX = doc.createElement("ds:X");
+                PublicKeyX.setAttribute("Value", ((ECPublicKey) pk).getW().getAffineX().toString());
+                Element PublicKeyY = doc.createElement("ds:Y");
+                PublicKeyY.setAttribute("Value", ((ECPublicKey) pk).getW().getAffineY().toString());
+//                PublicKey.setTextContent(Base64.encodeBase64String(key.getBytes()));
+                PublicKey.appendChild(PublicKeyX);
+                PublicKey.appendChild(PublicKeyY);
+                ECKeyValue.appendChild(PublicKey);
+                keyInfo.addKeyValue(ECKeyValue);
+            } catch (IOException e) {
+                // 
+            }
         } else {
             log.debug("not adding KeyValue for unsupported credential of type " + pk.getAlgorithm());
         }

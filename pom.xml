@@ -137,6 +137,11 @@
             <scope>test</scope>
         </dependency>
 
+		<dependency>
+		  <groupId>org.web3j</groupId>
+		  <artifactId>core</artifactId>
+		  <version>4.2.0</version>
+		</dependency>
     </dependencies>
 
     <profiles>
@@ -153,6 +158,14 @@
                             </descriptors>
                         </configuration>
                     </plugin>
+                    <plugin>
+			            <groupId>org.web3j</groupId>
+			            <artifactId>web3j-maven-plugin</artifactId>
+			            <version>4.2.0</version>
+			            <configuration>
+			                <soliditySourceFiles/>
+			            </configuration>
+			        </plugin>
                 </plugins>
             </build>
         </profile>

@@ -55,10 +55,13 @@ public class XSTJ51Test extends BaseTest {
 
         // build command-line arguments
         final String[] args = {
+                 
                 "--sign",
+                //"--extra",
+                "--digest", "SHA-256",
                 "--inFile", "in.xml",
-                "--outFile", "out.xml",
-                "--certificate", "sign.crt",
+                "--outFile", "out.xml"
+                ,"--certificate", "sign.crt",
                 "--key", "sign.key"
                 };
         final CommandLineArguments cli = new CommandLineArguments();
@@ -67,12 +70,12 @@ public class XSTJ51Test extends BaseTest {
 
         // acquire a document to sign
         final Document xml = readXMLDocument("in.xml");
-        
+        //XMLSecTool.generateAddress(cli, xml);
         // perform signature operation
         XMLSecTool.sign(cli, cred, xml);
         
         // verify the signature using our own code for consistency
-        XMLSecTool.verifySignature(cli, cred, xml);
+       // XMLSecTool.verifySignature(cli, cred, xml);
 
         // take a careful look at the signature
         final Element signatureElement = XMLSecTool.getSignatureElement(xml);
