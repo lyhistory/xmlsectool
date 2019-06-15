@@ -37,6 +37,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +86,7 @@ import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
+import org.bouncycastle.util.encoders.Hex;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.security.credential.CredentialSupport;
 import org.opensaml.security.x509.BasicX509Credential;
@@ -117,6 +119,8 @@ import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 import org.web3j.crypto.Sign;
 
+import org.spongycastle.util.BigIntegers;
+import org.ethereum.crypto.HashUtil;
 /**
  *  A command line tool for checking an XML file for well-formedness and validity as well as
  *  signing and checking signatures.
@@ -125,7 +129,9 @@ public final class XMLSecTool {
 
     /** Class logger. */
     private static Logger log;
-
+    static X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
+    static ECDomainParameters CURVE = new ECDomainParameters(
+            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
     /** Constructor. */
     private XMLSecTool() {}
 
@@ -430,7 +436,7 @@ public final class XMLSecTool {
 
             addSignatureELement(cli, documentRoot, signatureElement);
             signature.sign(CredentialSupport.extractSigningKey(signingCredential));
-            System.out.println("digest value:"+org.apache.xml.security.utils.Base64.encode(signature.getSignedInfo().item(0).getDigestValue()));
+            //System.out.println("digest value:"+org.apache.xml.security.utils.Base64.encode(signature.getSignedInfo().item(0).getDigestValue()));
             
             //h=H("TRUST/REVOKE"|𝑑) 
             String d = org.apache.xml.security.utils.Base64.encode(signature.getSignedInfo().item(0).getDigestValue());
@@ -438,24 +444,49 @@ public final class XMLSecTool {
             
             byte[] h_trust = Hash.sha3(String.format("TRUST{0}", d).getBytes(StandardCharsets.UTF_8));
             byte[] h_revoke = Hash.sha3(String.format("REVOKE{0}", d).getBytes(StandardCharsets.UTF_8));
-            X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
-            ECDomainParameters CURVE = new ECDomainParameters(
-                    CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
-            BigInteger privTrust = new BigInteger(encodeHexString(h_trust),16);
-            BigInteger privRevoke = new BigInteger(encodeHexString(h_revoke),16);
+            
+            BigInteger trustBI = new BigInteger(encodeHexString(h_trust),16);
+            BigInteger revokeBI = new BigInteger(encodeHexString(h_revoke),16);
             //new FixedPointCombMultiplier().multiply(CURVE.getG(), privKey);
-            BigInteger trustPK = Sign.publicKeyFromPrivate(privTrust);
-            BigInteger revokePK = Sign.publicKeyFromPrivate(privRevoke);
-            BigInteger adminPK = new BigInteger(encodeHexString(signingCredential.getPublicKey().getEncoded()),16);
-            System.out.println("adminPK:"+adminPK);
-            String proofOfTrust = Keys.getAddress(adminPK);
-            String proofOfRevoke = Keys.getAddress(revokePK);
-            log.info(String.format("proof of trust address:%s, proof of revoke address:%s", proofOfTrust,proofOfRevoke));
+            //BigInteger trustPK = Sign.publicKeyFromPrivate(privTrust);
+            //BigInteger revokePK = Sign.publicKeyFromPrivate(privRevoke);
+            ECPoint adminPKPoint=extractPublicKey((ECPublicKey) signingCredential.getPublicKey());
+            ECPoint trustPKPoint=adminPKPoint.multiply(trustBI);
+            ECPoint revokePKPoint=adminPKPoint.multiply(revokeBI);
+            //BigInteger adminPK = new BigInteger(encodeHexString(signingCredential.getPublicKey().getEncoded()),16);
+            //System.out.println("adminPK:"+adminPK);
+            //System.out.println("trustPK:"+trustPK);
+            String adminAddr = getAddress(adminPKPoint);
+            System.out.println("adminAddr:"+adminAddr);
+            String proofOfTrustAddr  = getAddress(trustPKPoint);
+            String proofOfRevokeAddr  = getAddress(revokePKPoint);
+            System.out.println("proofOfTrustAddr:"+proofOfTrustAddr);
+            System.out.println("proofOfRevokeAddr:"+proofOfRevokeAddr);
+            log.info(String.format("proof of trust address:%s, proof of revoke address:%s", proofOfTrustAddr,proofOfRevokeAddr));
             log.info("XML document successfully signed");
         } catch (final XMLSecurityException e) {
             log.error("Unable to create XML document signature", e);
             throw new Terminator(ReturnCode.RC_SIG);
         }
+    }
+    
+    private static ECPoint extractPublicKey(ECPublicKey ecPublicKey) {
+        java.security.spec.ECPoint publicPointW = ecPublicKey.getW();
+        BigInteger xCoord = publicPointW.getAffineX();
+        BigInteger yCoord = publicPointW.getAffineY();
+        return CURVE.getCurve().createPoint(xCoord, yCoord);
+    }
+    public static String getAddress(ECPoint pub) {
+        byte[] pubKeyHash = computeAddress(pub);
+
+        return Hex.toHexString(pubKeyHash);
+    }
+    public static byte[] computeAddress(byte[] pubBytes) {
+        return HashUtil.sha3omit12(Arrays.copyOfRange(pubBytes, 1, pubBytes.length));
+    }
+
+    public static byte[] computeAddress(ECPoint pubPoint) {
+        return computeAddress(pubPoint.getEncoded(false));
     }
     public static String encodeHexString(byte[] byteArray) {
         StringBuffer hexStringBuffer = new StringBuffer();
