@@ -1,12 +1,17 @@
 ############################################################################################
 ### Method 1: run directly from release version
 ############################################################################################
+# how to test the sample
+cd TokenScript/nft
+chmod u+x ./xmlsectool-2.1.0-SNAPSHOT/xmlsectool.sh
+dos2unix ./xmlsectool-2.1.0-SNAPSHOT/xmlsectool.sh
+./xmlsectool-2.1.0-SNAPSHOT/xmlsectool.sh --sign --keyInfoKeyName 'Liu Yue' --digest SHA-256 --signatureAlgorithm 'http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256' --inFile EntryToken.canonicalized.xml --outFile EntryToken.tsml --key ec-sign.key --certificate ec-sign.crt --signaturePosition LAST
+
+# generate secp256k1 key and crt
 openssl ecparam -name secp256k1 -outform PEM -out secp256k1.pem
 openssl ecparam -inform PEM -in secp256k1.pem -genkey -outform PEM -out ec-private-key.pem
 openssl pkcs8 -topk8 -nocrypt -inform PEM -in ec-private-key.pem -out ec-sign.key
-openssl req -new -x509 -key ec-sign.key -out ec-sign.crt -days 365
-
-./xmlsectool-2.1.0-SNAPSHOT/xmlsectool.sh --sign --keyInfoKeyName 'Liu Yue' --digest SHA-256 --signatureAlgorithm 'http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256' --inFile EntryToken.canonicalized.xml --outFile EntryToken.tsml --key ec-sign.key --certificate ec-sign.crt --signaturePosition LAST
+openssl req -new -x509 -key ec-sign.key -out ec-sign.crt -days 365  
 
 ############################################################################################
 ### Method 2: manually build from source
